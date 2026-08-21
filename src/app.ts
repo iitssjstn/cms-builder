@@ -90,6 +90,10 @@ app.use('/api/projects', settingsRoutes);
 app.use(express.static('public'));
 
 // SPA fallback voor admin
+app.get('/', (req: Request, res: Response) => {
+  res.sendFile('admin/index.html', { root: 'public' });
+});
+
 app.get('/admin/*', (req: Request, res: Response) => {
   res.sendFile('admin/index.html', { root: 'public' });
 });
