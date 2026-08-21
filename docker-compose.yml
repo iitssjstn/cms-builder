@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  app:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-gebruikersnaam}/website-builder:latest
+    container_name: website-builder
+    ports:
+      - "3000:3000"
+    volumes:
+      - app-data:/app/data
+      - app-uploads:/app/public/uploads
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - FORCE_SECURE_COOKIE=false
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  app-data:
+  app-uploads:
