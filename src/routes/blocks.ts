@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getDb } from '../db';
-import { createBlockSchema, updateBlockSchema, blockContentSchemas } from '../utils/validation';
+import { createBlockSchema, updateBlockSchema, blockContentSchemas, reorderIdsSchema } from '../utils/validation';
 import { requireAuth, requirePageAccess } from '../middleware/auth';
 
 const router = Router();
@@ -76,13 +76,36 @@ router.patch('/:pageId/blocks/:blockId', requireAuth, requirePageAccess, (req: R
   const data = parseResult.data;
   const type = data.type || existing.type;
 
-  if (data.content) {
+  if (data.content !== undefined || data.type !== undefined) {
     const contentSchema = blockContentSchemas[type];
-    const contentCheck = contentSchema.safeParse(data.content);
+    const contentCheck = contentSchema.safeParse(data.content ?? JSON.parse(existing.content));
     if (!contentCheck.success) {
       return res.status(400).json({ error: `Ongeldige content voor block type '${type}': ${contentCheck.error.errors[0].message}` });
     }
-    data.content = contentCheck.data;
+    if (data.content !== undefined) {
+      data.content = contentCheck.data;
+    }
+  }
+
+  if (data.parent_id !== undefined) {
+    if (data.parent_id === blockId) {
+      return res.status(400).json({ error: 'Een block kan niet zijn eigen parent zijn' });
+    }
+    const parent = db.prepare('SELECT id FROM blocks WHERE id = ? AND page_id = ?').get(data.parent_id, req.page!.id);
+    if (!parent) {
+      return res.status(400).json({ error: 'Parent block niet gevonden op deze pagina' });
+    }
+    const cycle = db.prepare(`
+      WITH RECURSIVE descendants(id) AS (
+        SELECT id FROM blocks WHERE parent_id = ?
+        UNION ALL
+        SELECT b.id FROM blocks b JOIN descendants d ON b.parent_id = d.id
+      )
+      SELECT 1 FROM descendants WHERE id = ?
+    `).get(blockId, data.parent_id);
+    if (cycle) {
+      return res.status(400).json({ error: 'Een block kan niet onder een descendant worden geplaatst' });
+    }
   }
 
   const updates: string[] = [];
@@ -110,11 +133,12 @@ router.patch('/:pageId/blocks/:blockId', requireAuth, requirePageAccess, (req: R
 
 // Reorder blocks (binnen dezelfde parent)
 router.post('/:pageId/blocks/reorder', requireAuth, requirePageAccess, (req: Request, res: Response) => {
-  const { blockIds } = req.body as { blockIds: number[] };
+  const parseResult = reorderIdsSchema.safeParse(req.body?.blockIds);
 
-  if (!Array.isArray(blockIds) || blockIds.length === 0) {
+  if (!parseResult.success) {
     return res.status(400).json({ error: 'blockIds array vereist' });
   }
+  const blockIds = parseResult.data;
 
   const db = getDb();
   const belongsToPage = db.prepare('SELECT COUNT(*) as count FROM blocks WHERE page_id = ? AND id IN (' + blockIds.map(() => '?').join(',') + ')')

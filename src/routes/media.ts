@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { randomBytes } from 'crypto';
 import { extension as mimeExtension } from 'mime-types';
+import { existsSync, mkdirSync } from 'fs';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
 import { getDb } from '../db';
@@ -11,6 +12,9 @@ import { requireAuth, requireProjectAccess } from '../middleware/auth';
 const router = Router();
 
 const UPLOAD_DIR = join(process.cwd(), 'public', 'uploads');
+if (!existsSync(UPLOAD_DIR)) {
+  mkdirSync(UPLOAD_DIR, { recursive: true });
+}
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -95,10 +99,13 @@ router.delete('/:projectId/media/:mediaId', requireAuth, requireProjectAccess, a
 
   db.prepare('DELETE FROM media WHERE id = ?').run(mediaId);
 
-  try {
-    await unlink(join(UPLOAD_DIR, existing.filename));
-  } catch {
-    // Bestand was al weg op disk; db-record is nu in ieder geval opgeruimd
+  const remainingReference = db.prepare('SELECT 1 FROM media WHERE filename = ? LIMIT 1').get(existing.filename);
+  if (!remainingReference) {
+    try {
+      await unlink(join(UPLOAD_DIR, existing.filename));
+    } catch {
+      // Bestand was al weg op disk; db-record is nu in ieder geval opgeruimd
+    }
   }
 
   res.json({ success: true });

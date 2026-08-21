@@ -171,6 +171,9 @@ export const createBlockSchema = z.object({
 
 export const updateBlockSchema = createBlockSchema.partial();
 
+export const reorderIdsSchema = z.array(z.number().int().positive()).min(1).max(100)
+  .refine(ids => new Set(ids).size === ids.length, 'IDs mogen niet dubbel voorkomen');
+
 export const navigationItemSchema = z.object({
   label: z.string().min(1).max(50),
   page_id: z.number().int().positive().optional(),

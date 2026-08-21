@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getDb } from '../db';
-import { createPageSchema, updatePageSchema } from '../utils/validation';
+import { createPageSchema, updatePageSchema, reorderIdsSchema } from '../utils/validation';
 import { requireAuth, requireProjectAccess, requirePageAccess } from '../middleware/auth';
 
 const router = Router();
@@ -97,17 +97,17 @@ router.patch('/:projectId/pages/:pageId', requireAuth, requireProjectAccess, req
 // Reorder pages
 router.post('/:projectId/pages/reorder', requireAuth, requireProjectAccess, (req: Request, res: Response) => {
   const projectId = parseInt(req.params.projectId, 10);
-  const { pageIds } = req.body as { pageIds: number[] };
-
-  if (!Array.isArray(pageIds)) {
+  const parseResult = reorderIdsSchema.safeParse(req.body?.pageIds);
+  if (!parseResult.success) {
     return res.status(400).json({ error: 'pageIds array vereist' });
   }
+  const pageIds = parseResult.data;
 
   const db = getDb();
   const belongsToProject = db.prepare('SELECT COUNT(*) as count FROM pages WHERE project_id = ? AND id IN (' + pageIds.map(() => '?').join(',') + ')')
     .get(projectId, ...pageIds) as { count: number };
 
-  if (pageIds.length === 0 || belongsToProject.count !== pageIds.length) {
+  if (belongsToProject.count !== pageIds.length) {
     return res.status(400).json({ error: 'Ongeldige paginalijst' });
   }
 

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getDb } from '../db';
-import { navigationItemSchema } from '../utils/validation';
+import { navigationItemSchema, reorderIdsSchema } from '../utils/validation';
 import { requireAuth, requireProjectAccess } from '../middleware/auth';
 
 const router = Router();
@@ -32,6 +32,13 @@ router.post('/:projectId/navigation', requireAuth, requireProjectAccess, (req: R
     }
   }
 
+  if (parent_id) {
+    const parent = db.prepare('SELECT id FROM navigation_items WHERE id = ? AND project_id = ?').get(parent_id, projectId);
+    if (!parent) {
+      return res.status(400).json({ error: 'Parent navigatie-item niet gevonden binnen dit project' });
+    }
+  }
+
   const maxOrder = db.prepare('SELECT MAX(sort_order) as maxOrder FROM navigation_items WHERE project_id = ?').get(projectId) as { maxOrder: number | null };
   const sortOrder = (maxOrder.maxOrder ?? -1) + 1;
 
@@ -60,10 +67,38 @@ router.patch('/:projectId/navigation/:itemId', requireAuth, requireProjectAccess
     return res.status(400).json({ error: parseResult.error.errors[0].message });
   }
 
+  const data = parseResult.data;
+  if (data.page_id !== undefined && data.page_id !== null) {
+    const page = db.prepare('SELECT id FROM pages WHERE id = ? AND project_id = ?').get(data.page_id, projectId);
+    if (!page) {
+      return res.status(400).json({ error: 'Pagina niet gevonden binnen dit project' });
+    }
+  }
+  if (data.parent_id !== undefined) {
+    if (data.parent_id === itemId) {
+      return res.status(400).json({ error: 'Een navigatie-item kan niet zijn eigen parent zijn' });
+    }
+    const parent = db.prepare('SELECT id FROM navigation_items WHERE id = ? AND project_id = ?').get(data.parent_id, projectId);
+    if (!parent) {
+      return res.status(400).json({ error: 'Parent navigatie-item niet gevonden binnen dit project' });
+    }
+    const cycle = db.prepare(`
+      WITH RECURSIVE descendants(id) AS (
+        SELECT id FROM navigation_items WHERE parent_id = ?
+        UNION ALL
+        SELECT n.id FROM navigation_items n JOIN descendants d ON n.parent_id = d.id
+      )
+      SELECT 1 FROM descendants WHERE id = ?
+    `).get(itemId, data.parent_id);
+    if (cycle) {
+      return res.status(400).json({ error: 'Een navigatie-item kan niet onder een descendant worden geplaatst' });
+    }
+  }
+
   const updates: string[] = [];
   const values: any[] = [];
 
-  for (const [key, value] of Object.entries(parseResult.data)) {
+  for (const [key, value] of Object.entries(data)) {
     updates.push(`${key} = ?`);
     values.push(key === 'is_external' ? (value ? 1 : 0) : value);
   }
@@ -84,11 +119,11 @@ router.patch('/:projectId/navigation/:itemId', requireAuth, requireProjectAccess
 // Reorder navigation items
 router.post('/:projectId/navigation/reorder', requireAuth, requireProjectAccess, (req: Request, res: Response) => {
   const projectId = parseInt(req.params.projectId, 10);
-  const { itemIds } = req.body as { itemIds: number[] };
-
-  if (!Array.isArray(itemIds) || itemIds.length === 0) {
+  const parseResult = reorderIdsSchema.safeParse(req.body?.itemIds);
+  if (!parseResult.success) {
     return res.status(400).json({ error: 'itemIds array vereist' });
   }
+  const itemIds = parseResult.data;
 
   const db = getDb();
   const belongsToProject = db.prepare('SELECT COUNT(*) as count FROM navigation_items WHERE project_id = ? AND id IN (' + itemIds.map(() => '?').join(',') + ')')

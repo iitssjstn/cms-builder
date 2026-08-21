@@ -155,6 +155,7 @@ router.post('/:projectId/duplicate', requireAuth, requireProjectAccess, (req: Re
   
   // Copy pages and blocks
   const pages = db.prepare('SELECT * FROM pages WHERE project_id = ?').all(projectId) as any[];
+  const pageIds = new Map<number, number>();
   for (const page of pages) {
     const pageResult = db.prepare(`
       INSERT INTO pages (project_id, name, slug, title, seo_title, seo_description, status, sort_order)
@@ -162,13 +163,22 @@ router.post('/:projectId/duplicate', requireAuth, requireProjectAccess, (req: Re
     `).run(newProjectId, page.name, page.slug, page.title, page.seo_title, page.seo_description, page.status, page.sort_order);
     
     const newPageId = pageResult.lastInsertRowid as number;
+    pageIds.set(page.id, newPageId);
     
     const blocks = db.prepare('SELECT * FROM blocks WHERE page_id = ?').all(page.id) as any[];
+    const blockIds = new Map<number, number>();
     for (const block of blocks) {
-      db.prepare(`
+      const blockResult = db.prepare(`
         INSERT INTO blocks (page_id, type, content, styles, responsive_styles, sort_order, parent_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(newPageId, block.type, block.content, block.styles, block.responsive_styles, block.sort_order, block.parent_id);
+        VALUES (?, ?, ?, ?, ?, ?, NULL)
+      `).run(newPageId, block.type, block.content, block.styles, block.responsive_styles, block.sort_order);
+      blockIds.set(block.id, blockResult.lastInsertRowid as number);
+    }
+    for (const block of blocks) {
+      if (block.parent_id && blockIds.has(block.parent_id)) {
+        db.prepare('UPDATE blocks SET parent_id = ? WHERE id = ?')
+          .run(blockIds.get(block.parent_id), blockIds.get(block.id));
+      }
     }
   }
   
@@ -183,11 +193,19 @@ router.post('/:projectId/duplicate', requireAuth, requireProjectAccess, (req: Re
   
   // Copy navigation
   const nav = db.prepare('SELECT * FROM navigation_items WHERE project_id = ? ORDER BY sort_order').all(projectId) as any[];
+  const navigationIds = new Map<number, number>();
   for (const item of nav) {
-    db.prepare(`
+    const itemResult = db.prepare(`
       INSERT INTO navigation_items (project_id, label, page_id, url, parent_id, sort_order, is_external)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(newProjectId, item.label, item.page_id, item.url, item.parent_id, item.sort_order, item.is_external);
+      VALUES (?, ?, ?, ?, NULL, ?, ?)
+    `).run(newProjectId, item.label, pageIds.get(item.page_id) || null, item.url, item.sort_order, item.is_external);
+    navigationIds.set(item.id, itemResult.lastInsertRowid as number);
+  }
+  for (const item of nav) {
+    if (item.parent_id && navigationIds.has(item.parent_id)) {
+      db.prepare('UPDATE navigation_items SET parent_id = ? WHERE id = ?')
+        .run(navigationIds.get(item.parent_id), navigationIds.get(item.id));
+    }
   }
   
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(newProjectId);

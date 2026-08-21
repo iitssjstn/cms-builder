@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { getDb } from '../db';
+import { config } from '../config';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { setupSchema, loginSchema } from '../utils/validation';
 import { authRateLimit } from '../middleware/rateLimit';
@@ -75,7 +76,7 @@ router.post('/logout', (req: Request, res: Response) => {
     if (err) {
       return res.status(500).json({ error: 'Uitloggen mislukt' });
     }
-    res.clearCookie('wb_session');
+    res.clearCookie(config.sessionName);
     res.json({ success: true });
   });
 });
