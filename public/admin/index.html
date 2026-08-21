@@ -306,7 +306,8 @@
         <!-- Preview -->
         <section x-show="currentView === 'preview'">
           <h2>Preview</h2>
-          <p class="muted">Live preview van de gepubliceerde site is nog niet beschikbaar in deze versie.</p>
+          <p class="muted">Bekijk de geselecteerde pagina in een nieuw tabblad.</p>
+          <button class="btn btn-primary" @click="openPreview" :disabled="!currentProjectId">Preview openen</button>
         </section>
 
         <!-- Export -->

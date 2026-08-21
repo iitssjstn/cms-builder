@@ -249,6 +249,13 @@ function app() {
       this.currentView = id;
     },
 
+    openPreview() {
+      if (!this.currentProject?.slug) return;
+      const page = this.pages.find(item => item.status === 'published') || this.pages[0];
+      const pagePath = page ? `/${encodeURIComponent(page.slug)}` : '';
+      window.open(`/preview/${encodeURIComponent(this.currentProject.slug)}${pagePath}`, '_blank', 'noopener');
+    },
+
     // --- pages ---
     async loadPages() {
       const data = await this.api(`/api/projects/${this.currentProjectId}/pages`);
