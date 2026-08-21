@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Build Docker image
+        run: docker build -t website-builder:test .
+
+      - name: Test Docker image starts
+        run: |
+          docker run -d --name test-container -p 3000:3000 \
+            -v test-data:/app/data \
+            -v test-uploads:/app/public/uploads \
+            website-builder:test
+          sleep 10
+          curl -f http://localhost:3000/healthz || (docker logs test-container && exit 1)
+          docker stop test-container
+          docker rm test-container
+          docker volume rm test-data test-uploads
