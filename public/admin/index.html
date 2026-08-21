@@ -188,6 +188,12 @@
 
           <template x-if="builderPage">
             <div>
+              <div class="layout-presets">
+                <div><strong>Snel starten</strong><span class="muted">Kies een voorbeeldindeling als basis.</span></div>
+                <template x-for="layout in layoutPresets" :key="layout.id">
+                  <button type="button" class="btn btn-secondary btn-sm" @click="applyLayout(layout.id)" :disabled="loading" :title="layout.description" x-text="layout.label"></button>
+                </template>
+              </div>
               <form class="inline-form" @submit.prevent="createBlock">
                 <select x-model="newBlock.type" @change="resetNewBlockContent">
                   <template x-for="t in blockTypes" :key="t">
@@ -343,7 +349,9 @@
         <!-- Export -->
         <section x-show="currentView === 'export'">
           <h2>Exporteren</h2>
-          <p class="muted">Site-export naar een downloadbaar bestand is nog niet beschikbaar in deze versie.</p>
+          <p class="muted">Download je gepubliceerde website als ZIP-bestand met HTML, styling en afbeeldingen.</p>
+          <button class="btn btn-primary" @click="downloadExport" :disabled="!currentProjectId || loading">Website exporteren</button>
+          <p class="error" x-show="exportError" x-text="exportError"></p>
         </section>
       </div>
     </div>

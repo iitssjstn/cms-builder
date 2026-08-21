@@ -248,6 +248,9 @@ textarea { resize: vertical; font-family: monospace; }
 .block-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
 .block-item-actions { display: flex; gap: 0.15rem; }
 .block-content-editor { width: 100%; font-size: 0.8rem; }
+.layout-presets { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.75rem; margin-bottom: 1rem; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 0.5rem; }
+.layout-presets > div { display: grid; margin-right: 0.35rem; }
+.layout-presets .muted { font-size: 0.75rem; }
 
 /* Media */
 .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }

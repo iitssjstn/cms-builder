@@ -15,6 +15,7 @@ import mediaRoutes from './routes/media';
 import navigationRoutes from './routes/navigation';
 import settingsRoutes from './routes/settings';
 import previewRoutes from './routes/preview';
+import exportRoutes from './routes/export';
 
 const app = express();
 const SQLiteStore = connectSqlite3(session);
@@ -86,6 +87,7 @@ app.use('/api/pages', blockRoutes);
 app.use('/api/projects', mediaRoutes);
 app.use('/api/projects', navigationRoutes);
 app.use('/api/projects', settingsRoutes);
+app.use('/api/projects', exportRoutes);
 app.use('/preview', previewRoutes);
 
 // Static files

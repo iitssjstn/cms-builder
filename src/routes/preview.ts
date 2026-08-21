@@ -51,10 +51,14 @@ function renderBlock(block: PreviewBlock, children: string): string {
       return `<section class="preview-hero"${attributes}><h1>${escapeHtml(content.headline)}</h1>${content.subheadline ? `<p>${escapeHtml(content.subheadline)}</p>` : ''}${content.cta_url ? `<a class="preview-button" href="${escapeHtml(content.cta_url)}">${escapeHtml(content.cta_text || 'Meer informatie')}</a>` : ''}${children}</section>`;
     case 'card':
       return `<article class="preview-card"${attributes}>${content.image ? `<img src="${escapeHtml(content.image)}" alt="">` : ''}${content.title ? `<h3>${escapeHtml(content.title)}</h3>` : ''}${content.description ? `<p>${escapeHtml(content.description)}</p>` : ''}${content.cta_url ? `<a class="preview-button" href="${escapeHtml(content.cta_url)}">${escapeHtml(content.cta_text || 'Lees meer')}</a>` : ''}${children}</article>`;
+    case 'gallery':
+      return `<div class="preview-gallery"${attributes}>${(content.images || []).map((image: any) => `<figure><img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt)}">${image.caption ? `<figcaption>${escapeHtml(image.caption)}</figcaption>` : ''}</figure>`).join('')}</div>`;
+    case 'contact-form':
+      return `<form class="preview-form"${attributes}>${(content.fields || []).map((field: any) => `<label>${escapeHtml(field.label)}${field.type === 'textarea' ? `<textarea name="${escapeHtml(field.name)}" placeholder="${escapeHtml(field.placeholder)}"${field.required ? ' required' : ''}></textarea>` : `<input type="${escapeHtml(field.type === 'select' ? 'text' : field.type)}" name="${escapeHtml(field.name)}" placeholder="${escapeHtml(field.placeholder)}"${field.required ? ' required' : ''}>`}</label>`).join('')}<button class="preview-button" type="submit">${escapeHtml(content.submit_text || 'Versturen')}</button></form>`;
     case 'divider':
-      return `<hr${attributes}>`;
+      return `<hr style="border-style:${escapeHtml(content.variant || 'solid')};${style}"${attributes ? '' : ''}>`;
     case 'spacer':
-      return `<div aria-hidden="true"${attributes}></div>`;
+      return `<div class="preview-spacer preview-spacer-${escapeHtml(content.size || 'md')}" aria-hidden="true"${attributes}></div>`;
     case 'container':
     case 'columns':
       return `<div${attributes}>${children}</div>`;
@@ -63,7 +67,7 @@ function renderBlock(block: PreviewBlock, children: string): string {
   }
 }
 
-function renderPageHtml(page: any, project: any, design: any, site: any, blocks: PreviewBlock[], navigation: any[]): string {
+export function renderPageHtml(page: any, project: any, design: any, site: any, blocks: PreviewBlock[], navigation: any[]): string {
   const childrenByParent = new Map<number | null, PreviewBlock[]>();
   for (const block of blocks) {
     const list = childrenByParent.get(block.parent_id) || [];
@@ -94,7 +98,7 @@ function renderPageHtml(page: any, project: any, design: any, site: any, blocks:
 <meta name="description" content="${escapeHtml(page.seo_description || site?.site_description || '')}">
 <style>
 :root{--primary:${escapeHtml(design?.primary_color || '#2563eb')};--secondary:${escapeHtml(design?.secondary_color || '#0ea5e9')};--background:${escapeHtml(design?.background_color || '#ffffff')};--text:${escapeHtml(design?.text_color || '#1f2937')};--radius:${escapeHtml(design?.border_radius || '0.5rem')};}
-*{box-sizing:border-box}body{margin:0;background:var(--background);color:var(--text);font-family:${fontFamily};line-height:1.6}h1,h2,h3,h4,h5,h6{font-family:${headingFont};line-height:1.2}a{color:var(--primary)}.preview-nav{display:flex;gap:1rem;flex-wrap:wrap;padding:1rem 5%;border-bottom:1px solid #e5e7eb}.preview-page{max-width:1100px;margin:0 auto;padding:2rem 5%}.preview-button{display:inline-block;background:var(--primary);color:#fff;padding:.65rem 1rem;border-radius:var(--radius);text-decoration:none}.preview-hero{padding:4rem 2rem;text-align:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border-radius:var(--radius)}.preview-card{padding:1.25rem;border:1px solid #e5e7eb;border-radius:var(--radius)}img,video{max-width:100%;height:auto}.preview-footer{padding:2rem 5%;border-top:1px solid #e5e7eb;color:#6b7280}
+*{box-sizing:border-box}body{margin:0;background:var(--background);color:var(--text);font-family:${fontFamily};line-height:1.6}h1,h2,h3,h4,h5,h6{font-family:${headingFont};line-height:1.2}a{color:var(--primary)}.preview-nav{display:flex;gap:1rem;flex-wrap:wrap;padding:1rem 5%;border-bottom:1px solid #e5e7eb}.preview-page{max-width:1100px;margin:0 auto;padding:2rem 5%}.preview-button{display:inline-block;background:var(--primary);color:#fff;padding:.65rem 1rem;border-radius:var(--radius);text-decoration:none}.preview-hero{padding:4rem 2rem;text-align:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border-radius:var(--radius)}.preview-card{padding:1.25rem;border:1px solid #e5e7eb;border-radius:var(--radius)}.preview-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.preview-gallery figure{margin:0}.preview-form{display:grid;gap:1rem;max-width:600px}.preview-form label{display:grid;gap:.35rem}.preview-form input,.preview-form textarea{padding:.65rem;border:1px solid #d1d5db;border-radius:var(--radius);font:inherit}.preview-form textarea{min-height:120px}.preview-spacer-xs{height:1rem}.preview-spacer-sm{height:2rem}.preview-spacer-md{height:4rem}.preview-spacer-lg{height:6rem}.preview-spacer-xl{height:10rem}img,video{max-width:100%;height:auto}.preview-footer{padding:2rem 5%;border-top:1px solid #e5e7eb;color:#6b7280}
 ${customCss}
 </style>
 </head>

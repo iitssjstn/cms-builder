@@ -3,6 +3,7 @@ import { getDb } from '../db';
 import { slugify, generateUniqueSlug } from '../utils/slug';
 import { createProjectSchema, updateProjectSchema } from '../utils/validation';
 import { requireAuth, requireProjectAccess } from '../middleware/auth';
+import { layouts } from '../utils/layouts';
 
 const router = Router();
 
@@ -266,6 +267,24 @@ async function createDefaultPages(db: any, projectId: number, template: string) 
       INSERT INTO navigation_items (project_id, label, page_id, sort_order)
       VALUES (?, ?, (SELECT id FROM pages WHERE project_id = ? AND slug = ?), ?)
     `).run(projectId, pages[i].name, projectId, pages[i].slug, i);
+  }
+
+  const layoutKey = template === 'portfolio' ? 'portfolio' : template === 'business' || template === 'restaurant' ? 'business' : 'landing';
+  const firstPage = db.prepare('SELECT id FROM pages WHERE project_id = ? ORDER BY sort_order ASC LIMIT 1').get(projectId) as { id: number } | undefined;
+  const layout = layouts[layoutKey];
+  if (firstPage && layout) {
+    const insert = db.prepare(`
+      INSERT INTO blocks (page_id, type, content, styles, responsive_styles, sort_order, parent_id)
+      VALUES (?, ?, ?, ?, ?, ?, NULL)
+    `);
+    layout.blocks.forEach((block, index) => insert.run(
+      firstPage.id,
+      block.type,
+      JSON.stringify(block.content),
+      JSON.stringify(block.styles || {}),
+      JSON.stringify(block.responsive_styles || {}),
+      index
+    ));
   }
 }
 

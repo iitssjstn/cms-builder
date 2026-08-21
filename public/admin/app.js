@@ -48,6 +48,12 @@ function app() {
     blockTypes: ['heading', 'text', 'image', 'button', 'link', 'video', 'container', 'columns', 'hero', 'card', 'gallery', 'contact-form', 'divider', 'spacer'],
     newBlock: { type: 'text', content: { content: '' } },
     editingBlock: null,
+    layoutPresets: [
+      { id: 'landing', label: 'Landingspagina', description: 'Introductie met duidelijke actieknop' },
+      { id: 'business', label: 'Bedrijf', description: 'Diensten en kennismaking' },
+      { id: 'contact', label: 'Contact', description: 'Contactinformatie en formulier' },
+      { id: 'portfolio', label: 'Portfolio', description: 'Projecten en voorbeelden' }
+    ],
     blockError: '',
 
     // Media
@@ -64,6 +70,7 @@ function app() {
     designError: '',
     siteForm: {},
     siteError: '',
+    exportError: '',
 
     async init() {
       try {
@@ -332,6 +339,21 @@ function app() {
       }
     },
 
+    async applyLayout(layout) {
+      if (!this.builderPage) return;
+      if (!confirm('Deze layout wordt onderaan de pagina toegevoegd. Doorgaan?')) return;
+      this.blockError = '';
+      this.loading = true;
+      try {
+        await this.api(`/api/pages/${this.builderPage.id}/blocks/layout`, { method: 'POST', body: JSON.stringify({ layout }) });
+        await this.loadBlocks();
+      } catch (e) {
+        this.blockError = e.message;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     resetNewBlockContent() {
       this.newBlock.content = this.defaultBlockContent(this.newBlock.type);
     },
@@ -411,6 +433,32 @@ function app() {
         await this.loadBlocks();
       } catch (e) {
         this.blockError = e.message;
+      }
+    },
+
+    async downloadExport() {
+      if (!this.currentProjectId) return;
+      this.exportError = '';
+      this.loading = true;
+      try {
+        const res = await fetch(`/api/projects/${this.currentProjectId}/export`, {
+          credentials: 'same-origin',
+          headers: { 'CSRF-Token': this.csrfToken }
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Exporteren mislukt');
+        }
+        const blob = await res.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${this.currentProject?.slug || 'website'}-export.zip`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } catch (e) {
+        this.exportError = e.message;
+      } finally {
+        this.loading = false;
       }
     },
 

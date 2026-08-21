@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { getDb } from '../db';
 import { createBlockSchema, updateBlockSchema, blockContentSchemas, reorderIdsSchema } from '../utils/validation';
 import { requireAuth, requirePageAccess } from '../middleware/auth';
+import { layouts } from '../utils/layouts';
 
 const router = Router();
 
@@ -56,6 +57,35 @@ router.post('/:pageId/blocks', requireAuth, requirePageAccess, (req: Request, re
   res.status(201).json({
     block: { ...row, content: JSON.parse(row.content), styles: JSON.parse(row.styles), responsive_styles: JSON.parse(row.responsive_styles) }
   });
+});
+
+// Add a ready-made layout to a page
+router.post('/:pageId/blocks/layout', requireAuth, requirePageAccess, (req: Request, res: Response) => {
+  const layout = layouts[req.body?.layout];
+  if (!layout) {
+    return res.status(400).json({ error: 'Onbekende layout' });
+  }
+
+  const db = getDb();
+  const insert = db.prepare(`
+    INSERT INTO blocks (page_id, type, content, styles, responsive_styles, sort_order, parent_id)
+    VALUES (?, ?, ?, ?, ?, ?, NULL)
+  `);
+  const addLayout = db.transaction(() => {
+    const current = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as maxOrder FROM blocks WHERE page_id = ?').get(req.page!.id) as { maxOrder: number };
+    layout.blocks.forEach((block, index) => insert.run(
+      req.page!.id,
+      block.type,
+      JSON.stringify(block.content),
+      JSON.stringify(block.styles || {}),
+      JSON.stringify(block.responsive_styles || {}),
+      current.maxOrder + index + 1
+    ));
+  });
+  addLayout();
+
+  const rows = db.prepare('SELECT * FROM blocks WHERE page_id = ? ORDER BY sort_order ASC').all(req.page!.id);
+  res.status(201).json({ blocks: rows, layout: layout.label });
 });
 
 // Update block
