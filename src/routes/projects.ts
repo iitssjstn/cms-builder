@@ -4,6 +4,7 @@ import { slugify, generateUniqueSlug } from '../utils/slug';
 import { createProjectSchema, updateProjectSchema } from '../utils/validation';
 import { requireAuth, requireProjectAccess } from '../middleware/auth';
 import { layouts } from '../utils/layouts';
+import { templateSites } from '../utils/templateSites';
 
 const router = Router();
 
@@ -62,8 +63,19 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
   
   const projectId = result.lastInsertRowid as number;
   
-  // Initialize design settings
-  db.prepare('INSERT INTO design_settings (project_id) VALUES (?)').run(projectId);
+  // Initialize a visual identity that matches the selected template
+  const designDefaults: Record<string, [string, string, string, string, string, string, string]> = {
+    blank: ['#2563eb', '#0ea5e9', '#ffffff', '#1f2937', 'system-ui, sans-serif', 'system-ui, sans-serif', '0.5rem'],
+    business: ['#0f766e', '#14b8a6', '#f8fafc', '#16302b', 'Arial, sans-serif', 'Georgia, serif', '0.35rem'],
+    portfolio: ['#db2777', '#f97316', '#fff7ed', '#2b1b2b', 'Arial, sans-serif', 'Georgia, serif', '0.75rem'],
+    restaurant: ['#9f1239', '#ea580c', '#fffaf0', '#3b1f1f', 'Georgia, serif', 'Georgia, serif', '0.25rem'],
+    landing: ['#4338ca', '#0891b2', '#f0fdfa', '#172033', 'Arial, sans-serif', 'Arial, sans-serif', '0.75rem']
+  };
+  const [primary, secondary, background, text, font, headingFont, radius] = designDefaults[template || 'blank'] || designDefaults.blank;
+  db.prepare(`
+    INSERT INTO design_settings (project_id, primary_color, secondary_color, background_color, text_color, font_family, heading_font_family, border_radius)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(projectId, primary, secondary, background, text, font, headingFont, radius);
   
   // Initialize site settings
   db.prepare('INSERT INTO site_settings (project_id, site_name) VALUES (?, ?)').run(projectId, name);
@@ -269,16 +281,18 @@ async function createDefaultPages(db: any, projectId: number, template: string) 
     `).run(projectId, pages[i].name, projectId, pages[i].slug, i);
   }
 
-  const layoutKey = template === 'portfolio' ? 'portfolio' : template === 'business' || template === 'restaurant' ? 'business' : 'landing';
-  const firstPage = db.prepare('SELECT id FROM pages WHERE project_id = ? ORDER BY sort_order ASC LIMIT 1').get(projectId) as { id: number } | undefined;
-  const layout = layouts[layoutKey];
-  if (firstPage && layout) {
-    const insert = db.prepare(`
-      INSERT INTO blocks (page_id, type, content, styles, responsive_styles, sort_order, parent_id)
-      VALUES (?, ?, ?, ?, ?, ?, NULL)
-    `);
-    layout.blocks.forEach((block, index) => insert.run(
-      firstPage.id,
+  const defaultLayout = template === 'portfolio' ? 'portfolio' : template === 'business' || template === 'restaurant' ? 'business' : 'landing';
+  const siteLayouts = templateSites[template] || {};
+  const insert = db.prepare(`
+    INSERT INTO blocks (page_id, type, content, styles, responsive_styles, sort_order, parent_id)
+    VALUES (?, ?, ?, ?, ?, ?, NULL)
+  `);
+  for (const page of pages) {
+    const databasePage = db.prepare('SELECT id FROM pages WHERE project_id = ? AND slug = ?').get(projectId, page.slug) as { id: number } | undefined;
+    const blocks = siteLayouts[page.slug] || (page.slug === 'home' ? layouts[defaultLayout]?.blocks : []);
+    if (!databasePage || !blocks) continue;
+    blocks.forEach((block, index) => insert.run(
+      databasePage.id,
       block.type,
       JSON.stringify(block.content),
       JSON.stringify(block.styles || {}),
