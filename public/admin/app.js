@@ -46,7 +46,8 @@ function app() {
     builderPage: null,
     blocks: [],
     blockTypes: ['heading', 'text', 'image', 'button', 'link', 'video', 'container', 'columns', 'hero', 'card', 'gallery', 'contact-form', 'divider', 'spacer'],
-    newBlock: { type: 'text', contentJson: '{}' },
+    newBlock: { type: 'text', content: { content: '' } },
+    editingBlock: null,
     blockError: '',
 
     // Media
@@ -316,20 +317,13 @@ function app() {
 
     async createBlock() {
       this.blockError = '';
-      let content;
-      try {
-        content = JSON.parse(this.newBlock.contentJson || '{}');
-      } catch (e) {
-        this.blockError = 'Content is geen geldige JSON';
-        return;
-      }
       this.loading = true;
       try {
         await this.api(`/api/pages/${this.builderPage.id}/blocks`, {
           method: 'POST',
-          body: JSON.stringify({ type: this.newBlock.type, content })
+          body: JSON.stringify({ type: this.newBlock.type, content: this.newBlock.content })
         });
-        this.newBlock.contentJson = '{}';
+        this.resetNewBlockContent();
         await this.loadBlocks();
       } catch (e) {
         this.blockError = e.message;
@@ -338,22 +332,59 @@ function app() {
       }
     },
 
-    async updateBlockContent(block, rawValue) {
-      let content;
+    resetNewBlockContent() {
+      this.newBlock.content = this.defaultBlockContent(this.newBlock.type);
+    },
+
+    defaultBlockContent(type) {
+      const defaults = {
+        heading: { level: 'h2', text: '' },
+        text: { content: '' },
+        image: { src: '', alt: '' },
+        button: { text: '', url: '', variant: 'primary', size: 'md' },
+        link: { text: '', url: '', target: '_self' },
+        video: { src: '', controls: true, autoplay: false, loop: false, muted: true },
+        container: { children: [] },
+        columns: { columns: 2, gap: '1.5rem', children: [[], []] },
+        hero: { headline: '', subheadline: '', cta_text: '', cta_url: '', text_align: 'center' },
+        card: { image: '', title: '', description: '', cta_text: '', cta_url: '' },
+        gallery: { images: [], columns: 3, gap: '1rem' },
+        'contact-form': { fields: [{ type: 'text', name: 'name', label: 'Naam', required: true }, { type: 'email', name: 'email', label: 'E-mail', required: true }, { type: 'textarea', name: 'message', label: 'Bericht', required: true }], submit_text: 'Versturen', success_message: 'Bedankt voor je bericht!' },
+        divider: { variant: 'solid' },
+        spacer: { size: 'md' }
+      };
+      return JSON.parse(JSON.stringify(defaults[type] || defaults.text));
+    },
+
+    blockLabel(type) {
+      return { heading: 'Koptekst', text: 'Tekst', image: 'Afbeelding', button: 'Knop', link: 'Link', video: 'Video', container: 'Sectie', columns: 'Kolommen', hero: 'Hero-sectie', card: 'Kaart', gallery: 'Galerij', 'contact-form': 'Contactformulier', divider: 'Scheidingslijn', spacer: 'Ruimte' }[type] || type;
+    },
+
+    blockSummary(block) {
+      const content = block.content || {};
+      return content.text || content.content || content.headline || content.title || '';
+    },
+
+    editBlock(block) {
+      this.blockError = '';
+      this.editingBlock = { ...block, content: JSON.parse(JSON.stringify(block.content || {})) };
+    },
+
+    async saveEditedBlock() {
+      if (!this.editingBlock) return;
+      this.blockError = '';
+      this.loading = true;
       try {
-        content = JSON.parse(rawValue);
-      } catch (e) {
-        this.blockError = 'Content is geen geldige JSON';
-        return;
-      }
-      try {
-        await this.api(`/api/pages/${this.builderPage.id}/blocks/${block.id}`, {
+        await this.api(`/api/pages/${this.builderPage.id}/blocks/${this.editingBlock.id}`, {
           method: 'PATCH',
-          body: JSON.stringify({ content })
+          body: JSON.stringify({ content: this.editingBlock.content })
         });
+        this.editingBlock = null;
         await this.loadBlocks();
       } catch (e) {
         this.blockError = e.message;
+      } finally {
+        this.loading = false;
       }
     },
 

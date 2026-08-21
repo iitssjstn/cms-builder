@@ -189,12 +189,22 @@
           <template x-if="builderPage">
             <div>
               <form class="inline-form" @submit.prevent="createBlock">
-                <select x-model="newBlock.type">
+                <select x-model="newBlock.type" @change="resetNewBlockContent">
                   <template x-for="t in blockTypes" :key="t">
                     <option :value="t" x-text="t"></option>
                   </template>
                 </select>
-                <textarea x-model="newBlock.contentJson" rows="2" placeholder='content JSON, bv. {"text":"Hallo"}'></textarea>
+                <div class="builder-fields">
+                  <div class="form-group" x-show="newBlock.type === 'heading'"><label>Koptekst</label><input type="text" x-model="newBlock.content.text" placeholder="Bijvoorbeeld: Welkom op mijn website" maxlength="200"></div>
+                  <div class="form-group" x-show="newBlock.type === 'text'"><label>Tekst</label><textarea x-model="newBlock.content.content" rows="4" placeholder="Schrijf hier je tekst..."></textarea></div>
+                  <div class="form-group" x-show="newBlock.type === 'image'"><label>Afbeelding</label><input type="url" x-model="newBlock.content.src" placeholder="Plak een afbeeldingslink"><label>Beschrijving voor bezoekers</label><input type="text" x-model="newBlock.content.alt" placeholder="Wat staat er op de afbeelding?"></div>
+                  <div class="form-row" x-show="newBlock.type === 'button' || newBlock.type === 'link'"><div class="form-group"><label>Tekst op de knop</label><input type="text" x-model="newBlock.content.text" placeholder="Lees meer"></div><div class="form-group"><label>Waar gaat de knop heen?</label><input type="url" x-model="newBlock.content.url" placeholder="https://... of /contact"></div></div>
+                  <div class="form-group" x-show="newBlock.type === 'hero'"><label>Grote titel</label><input type="text" x-model="newBlock.content.headline" placeholder="Jouw belangrijkste boodschap"><label>Ondertekst</label><textarea x-model="newBlock.content.subheadline" rows="2" placeholder="Leg kort uit wat je aanbiedt"></textarea><label>Knoptekst (optioneel)</label><input type="text" x-model="newBlock.content.cta_text" placeholder="Ontdek meer"><label>Link van de knop (optioneel)</label><input type="url" x-model="newBlock.content.cta_url" placeholder="/contact"></div>
+                  <div class="form-group" x-show="newBlock.type === 'card'"><label>Titel</label><input type="text" x-model="newBlock.content.title" placeholder="Titel van de kaart"><label>Beschrijving</label><textarea x-model="newBlock.content.description" rows="3" placeholder="Korte beschrijving"></textarea><label>Knoptekst (optioneel)</label><input type="text" x-model="newBlock.content.cta_text" placeholder="Lees meer"><label>Link (optioneel)</label><input type="url" x-model="newBlock.content.cta_url" placeholder="/meer-informatie"></div>
+                  <div class="form-group" x-show="newBlock.type === 'divider'"><label>Stijl van de scheidingslijn</label><select x-model="newBlock.content.variant"><option value="solid">Eenvoudig</option><option value="dashed">Gestreept</option><option value="dotted">Gestippeld</option><option value="double">Dubbel</option></select></div>
+                  <div class="form-group" x-show="newBlock.type === 'spacer'"><label>Hoeveel ruimte?</label><select x-model="newBlock.content.size"><option value="xs">Klein</option><option value="sm">Compact</option><option value="md">Normaal</option><option value="lg">Groot</option><option value="xl">Extra groot</option></select></div>
+                  <p class="muted builder-help" x-show="['container','columns','video','gallery','contact-form'].includes(newBlock.type)">Dit onderdeel krijgt eerst een standaardopmaak. Je kunt de inhoud daarna verder aanpassen via de instellingen.</p>
+                </div>
                 <button type="submit" class="btn btn-primary btn-sm" :disabled="loading">Block toevoegen</button>
               </form>
               <p class="error" x-show="blockError" x-text="blockError"></p>
@@ -203,17 +213,37 @@
                 <template x-for="(b, index) in blocks" :key="b.id">
                   <div class="block-item">
                     <div class="block-item-header">
-                      <strong x-text="b.type"></strong>
+                      <div><strong x-text="blockLabel(b.type)"></strong><span class="block-summary" x-text="blockSummary(b)"></span></div>
                       <div class="block-item-actions">
                         <button class="btn-icon" @click="moveBlock(index, -1)" :disabled="index === 0" title="Omhoog">↑</button>
                         <button class="btn-icon" @click="moveBlock(index, 1)" :disabled="index === blocks.length - 1" title="Omlaag">↓</button>
+                        <button class="btn btn-sm" @click="editBlock(b)">Bewerken</button>
                         <button class="btn-icon" @click="deleteBlock(b)" title="Verwijderen">✕</button>
                       </div>
                     </div>
-                    <textarea class="block-content-editor" rows="3" :value="JSON.stringify(b.content, null, 2)" @change="updateBlockContent(b, $event.target.value)"></textarea>
                   </div>
                 </template>
                 <p class="muted" x-show="blocks.length === 0">Deze pagina heeft nog geen blocks.</p>
+              </div>
+
+              <div class="modal-overlay" x-show="editingBlock" @click.self="editingBlock = null" x-cloak>
+                <div class="modal builder-modal" x-if="editingBlock">
+                  <h2>Onderdeel bewerken</h2>
+                  <p class="muted" x-text="blockLabel(editingBlock?.type)"></p>
+                  <div class="builder-fields">
+                    <div class="form-group" x-show="editingBlock?.type === 'heading'"><label>Koptekst</label><input type="text" x-model="editingBlock.content.text" maxlength="200"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'text'"><label>Tekst</label><textarea x-model="editingBlock.content.content" rows="6"></textarea></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'image'"><label>Afbeeldingslink</label><input type="url" x-model="editingBlock.content.src"><label>Beschrijving</label><input type="text" x-model="editingBlock.content.alt"></div>
+                    <div class="form-row" x-show="editingBlock?.type === 'button' || editingBlock?.type === 'link'"><div class="form-group"><label>Tekst</label><input type="text" x-model="editingBlock.content.text"></div><div class="form-group"><label>Link</label><input type="url" x-model="editingBlock.content.url"></div></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'hero'"><label>Grote titel</label><input type="text" x-model="editingBlock.content.headline"><label>Ondertekst</label><textarea x-model="editingBlock.content.subheadline" rows="3"></textarea><label>Knoptekst</label><input type="text" x-model="editingBlock.content.cta_text"><label>Knoplink</label><input type="url" x-model="editingBlock.content.cta_url"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'card'"><label>Titel</label><input type="text" x-model="editingBlock.content.title"><label>Beschrijving</label><textarea x-model="editingBlock.content.description" rows="3"></textarea><label>Knoptekst</label><input type="text" x-model="editingBlock.content.cta_text"><label>Link</label><input type="url" x-model="editingBlock.content.cta_url"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'divider'"><label>Stijl</label><select x-model="editingBlock.content.variant"><option value="solid">Eenvoudig</option><option value="dashed">Gestreept</option><option value="dotted">Gestippeld</option><option value="double">Dubbel</option></select></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'spacer'"><label>Hoeveel ruimte?</label><select x-model="editingBlock.content.size"><option value="xs">Klein</option><option value="sm">Compact</option><option value="md">Normaal</option><option value="lg">Groot</option><option value="xl">Extra groot</option></select></div>
+                    <p class="muted" x-show="editingBlock && !['heading','text','image','button','link','hero','card','divider','spacer'].includes(editingBlock.type)">Dit onderdeel gebruikt een standaardopmaak.</p>
+                  </div>
+                  <p class="error" x-show="blockError" x-text="blockError"></p>
+                  <div class="modal-actions"><button class="btn btn-secondary" @click="editingBlock = null">Annuleren</button><button class="btn btn-primary" @click="saveEditedBlock" :disabled="loading">Opslaan</button></div>
+                </div>
               </div>
             </div>
           </template>
