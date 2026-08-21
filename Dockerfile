@@ -23,10 +23,13 @@ COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
-COPY --from=builder --chown=nodejs:nodejs /app/data ./data
 
-# Create uploads directory with correct permissions
-RUN mkdir -p /app/public/uploads && chown -R nodejs:nodejs /app/public/uploads
+# Data- en uploads-mappen aanmaken met correcte rechten.
+# /app/data wordt niet uit de builder-stage gekopieerd: die map bestaat daar
+# niet (wordt pas bij het opstarten van de app aangemaakt/gevuld) en wordt in
+# productie toch als named volume gemount, zie docker-compose.yml.
+RUN mkdir -p /app/data /app/public/uploads && \
+    chown -R nodejs:nodejs /app/data /app/public/uploads
 
 USER nodejs
 
