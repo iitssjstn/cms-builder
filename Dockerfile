@@ -3,6 +3,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# better-sqlite3 is een native module. Als er geen kant-en-klare binary is
+# voor deze Node/Alpine(musl)-combinatie, valt npm terug op node-gyp, wat een
+# C/C++ toolchain nodig heeft die Alpine niet standaard meelevert.
+RUN apk add --no-cache python3 make g++
+
+# Forceer compilatie vanaf source i.p.v. een gedownloade prebuilt binary.
+# Prebuilt binaries voor better-sqlite3 zijn tegen glibc gelinkt; Alpine
+# gebruikt musl, wat op runtime een "symbol not found: fcntl64"-crash geeft.
+ENV npm_config_build_from_source=true
+
 COPY package*.json ./
 RUN npm ci
 
