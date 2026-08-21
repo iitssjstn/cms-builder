@@ -1,9 +1,10 @@
 import csrf from 'csurf';
+import { config } from '../config';
 
 export const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
-    secure: false, // Wordt overschreven door session config
+    secure: config.forceSecureCookie,
     sameSite: 'lax'
   }
 });

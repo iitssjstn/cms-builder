@@ -12,48 +12,43 @@
 </head>
 <body x-data="app()" x-init="init()">
   <!-- Sidebar -->
-  <aside class="sidebar" :class="{ 'collapsed': sidebarCollapsed }" x-show="!showLogin && !showSetup">
+  <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }" x-show="!showLogin && !showSetup" x-cloak>
     <div class="sidebar-header">
-      <h1 class="logo">🏗️ Website Builder</h1>
-      <button class="btn-icon" @click="sidebarCollapsed = !sidebarCollapsed" title="Menu in/uitklappen">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 12h18M3 6h18M3 18h18"/>
-        </svg>
-      </button>
+      <h1 class="logo">🏗️ <span x-show="!sidebarCollapsed">Website Builder</span></h1>
+      <button class="btn-icon" @click="sidebarCollapsed = !sidebarCollapsed" title="Menu in/uitklappen">☰</button>
     </div>
-    
+
     <nav class="sidebar-nav">
       <template x-for="item in navItems" :key="item.id">
-        <a 
-          href="#" 
-          class="nav-item" 
+        <a
+          href="#"
+          class="nav-item"
           :class="{ active: currentView === item.id }"
           @click.prevent="switchView(item.id)"
           :title="sidebarCollapsed ? item.label : ''"
         >
-          <span class="nav-icon" x-html="item.icon"></span>
+          <span class="nav-icon" x-text="item.icon"></span>
           <span class="nav-label" x-show="!sidebarCollapsed" x-text="item.label"></span>
         </a>
       </template>
     </nav>
-    
-    <div class="sidebar-footer" x-show="!sidebarCollapsed">
-      <div class="user-info">
+
+    <div class="sidebar-footer">
+      <div class="user-info" x-show="!sidebarCollapsed">
         <span x-text="user?.email"></span>
       </div>
-      <button class="btn btn-secondary btn-sm" @click="logout">Uitloggen</button>
+      <button class="btn btn-secondary btn-sm btn-block" @click="logout">Uitloggen</button>
     </div>
   </aside>
 
   <!-- Main content -->
-  <main class="main-content" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
-    <!-- Top bar -->
-    <header class="topbar" x-show="!showLogin && !showSetup">
+  <main class="main-content" :class="{ 'sidebar-collapsed': sidebarCollapsed }" x-show="!showLogin && !showSetup" x-cloak>
+    <header class="topbar">
       <div class="topbar-left">
         <h2 x-text="currentProject?.name || 'Geen project geselecteerd'"></h2>
       </div>
       <div class="topbar-right">
-        <select class="select" v-model="currentProjectId" @change="switchProject($event.target.value)" x-show="projects.length > 0">
+        <select class="select" x-model="currentProjectId" @change="switchProject(currentProjectId)" x-show="projects.length > 0">
           <option value="">Kies project...</option>
           <template x-for="p in projects" :key="p.id">
             <option :value="p.id" x-text="p.name"></option>
@@ -63,31 +58,34 @@
       </div>
     </header>
 
-    <!-- Content area -->
     <div class="content-area">
-      <!-- Project selector (when no project selected) -->
-      <div class="project-selector" x-show="!currentProjectId && !showCreateProject && projects.length > 0">
+      <p class="banner banner-error" x-show="globalError" x-text="globalError" @click="globalError = ''"></p>
+
+      <!-- Project selector -->
+      <section class="project-selector" x-show="!currentProjectId">
         <h2>Je projecten</h2>
+        <p class="muted" x-show="projects.length === 0">Je hebt nog geen projecten. Maak je eerste project aan om te beginnen.</p>
         <div class="project-grid">
           <template x-for="p in projects" :key="p.id">
             <div class="project-card" @click="selectProject(p.id)">
               <div class="project-card-header">
                 <h3 x-text="p.name"></h3>
-                <span class="badge" :class="p.template" x-text="p.template"></span>
+                <span class="badge" x-text="p.template"></span>
               </div>
               <p class="project-meta" x-text="`${p.page_count} pagina's • ${p.media_count} media`"></p>
               <div class="project-actions">
-                <button class="btn btn-sm" @click.stop="editProject(p)">Bewerken</button>
+                <button class="btn btn-sm" @click.stop="duplicateProject(p.id)">Dupliceren</button>
+                <button class="btn btn-sm btn-danger" @click.stop="deleteProject(p)">Verwijderen</button>
                 <button class="btn btn-primary btn-sm" @click.stop="selectProject(p.id)">Openen</button>
               </div>
             </div>
           </template>
         </div>
         <button class="btn btn-primary" @click="showCreateProject = true">Nieuw project aanmaken</button>
-      </div>
+      </section>
 
       <!-- Create project modal -->
-      <div class="modal-overlay" x-show="showCreateProject" @click.self="showCreateProject = false">
+      <div class="modal-overlay" x-show="showCreateProject" @click.self="showCreateProject = false" x-cloak>
         <div class="modal">
           <h2>Nieuw project aanmaken</h2>
           <form @submit.prevent="createProject">
@@ -97,7 +95,7 @@
             </div>
             <div class="form-group">
               <label>Slug (URL)</label>
-              <input type="text" x-model="newProject.slug" required maxlength="100" pattern="[a-z0-9-]+">
+              <input type="text" x-model="newProject.slug" maxlength="100" pattern="[a-z0-9-]+" placeholder="wordt automatisch gegenereerd">
             </div>
             <div class="form-group">
               <label>Beschrijving</label>
@@ -113,43 +111,209 @@
                 <option value="landing">Landing page</option>
               </select>
             </div>
+            <p class="error" x-show="projectError" x-text="projectError"></p>
             <div class="modal-actions">
               <button type="button" class="btn btn-secondary" @click="showCreateProject = false">Annuleren</button>
-              <button type="submit" class="btn btn-primary">Aanmaken</button>
+              <button type="submit" class="btn btn-primary" :disabled="loading">Aanmaken</button>
             </div>
           </form>
         </div>
       </div>
 
       <!-- Project views -->
-      <div x-show="currentProjectId && currentView" x-cloak>
-        <template x-if="currentView === 'overview'">
-          <div x-html="overviewContent"></div>
-        </template>
-        <template x-if="currentView === 'pages'">
-          <div x-html="pagesContent"></div>
-        </template>
-        <template x-if="currentView === 'builder'">
-          <div x-html="builderContent"></div>
-        </template>
-        <template x-if="currentView === 'media'">
-          <div x-html="mediaContent"></div>
-        </template>
-        <template x-if="currentView === 'navigation'">
-          <div x-html="navigationContent"></div>
-        </template>
-        <template x-if="currentView === 'design'">
-          <div x-html="designContent"></div>
-        </template>
-        <template x-if="currentView === 'settings'">
-          <div x-html="settingsContent"></div>
-        </template>
-        <template x-if="currentView === 'preview'">
-          <div x-html="previewContent"></div>
-        </template>
-        <template x-if="currentView === 'export'">
-          <div x-html="exportContent"></div>
-        </template>
+      <div x-show="currentProjectId" x-cloak>
+
+        <!-- Overview -->
+        <section x-show="currentView === 'overview'">
+          <h2>Overzicht</h2>
+          <div class="stat-grid">
+            <div class="stat-card"><span class="stat-value" x-text="pages.length"></span><span class="stat-label">Pagina's</span></div>
+            <div class="stat-card"><span class="stat-value" x-text="media.length"></span><span class="stat-label">Media</span></div>
+            <div class="stat-card"><span class="stat-value" x-text="navItemsList.length"></span><span class="stat-label">Navigatie-items</span></div>
+          </div>
+          <p class="muted">Gebruik het menu links om pagina's, media, navigatie en het ontwerp van dit project te beheren.</p>
+        </section>
+
+        <!-- Pages -->
+        <section x-show="currentView === 'pages'">
+          <div class="section-header">
+            <h2>Pagina's</h2>
+            <button class="btn btn-primary btn-sm" @click="showCreatePage = true">Nieuwe pagina</button>
+          </div>
+
+          <div class="modal-overlay" x-show="showCreatePage" @click.self="showCreatePage = false" x-cloak>
+            <div class="modal">
+              <h2>Nieuwe pagina</h2>
+              <form @submit.prevent="createPage">
+                <div class="form-group"><label>Naam</label><input type="text" x-model="newPage.name" required maxlength="100"></div>
+                <div class="form-group"><label>Slug</label><input type="text" x-model="newPage.slug" required maxlength="100" pattern="[a-z0-9-]+"></div>
+                <div class="form-group"><label>Titel</label><input type="text" x-model="newPage.title" required maxlength="200"></div>
+                <p class="error" x-show="pageError" x-text="pageError"></p>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" @click="showCreatePage = false">Annuleren</button>
+                  <button type="submit" class="btn btn-primary" :disabled="loading">Aanmaken</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <table class="table" x-show="pages.length > 0">
+            <thead><tr><th>Naam</th><th>Slug</th><th>Status</th><th>Blocks</th><th></th></tr></thead>
+            <tbody>
+              <template x-for="p in pages" :key="p.id">
+                <tr>
+                  <td x-text="p.name"></td>
+                  <td x-text="p.slug"></td>
+                  <td><span class="badge" x-text="p.status"></span></td>
+                  <td x-text="p.block_count"></td>
+                  <td class="table-actions">
+                    <button class="btn btn-sm" @click="togglePageStatus(p)" x-text="p.status === 'published' ? 'Naar concept' : 'Publiceren'"></button>
+                    <button class="btn btn-sm" @click="openBuilder(p)">Builder</button>
+                    <button class="btn btn-sm btn-danger" @click="deletePage(p)">Verwijderen</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+          <p class="muted" x-show="pages.length === 0">Nog geen pagina's in dit project.</p>
+        </section>
+
+        <!-- Builder -->
+        <section x-show="currentView === 'builder'">
+          <div class="section-header">
+            <h2>Pagina builder <span class="muted" x-show="builderPage" x-text="' — ' + builderPage?.name"></span></h2>
+          </div>
+
+          <p class="muted" x-show="!builderPage">Kies eerst een pagina bij "Pagina's" en klik op "Builder".</p>
+
+          <template x-if="builderPage">
+            <div>
+              <form class="inline-form" @submit.prevent="createBlock">
+                <select x-model="newBlock.type">
+                  <template x-for="t in blockTypes" :key="t">
+                    <option :value="t" x-text="t"></option>
+                  </template>
+                </select>
+                <textarea x-model="newBlock.contentJson" rows="2" placeholder='content JSON, bv. {"text":"Hallo"}'></textarea>
+                <button type="submit" class="btn btn-primary btn-sm" :disabled="loading">Block toevoegen</button>
+              </form>
+              <p class="error" x-show="blockError" x-text="blockError"></p>
+
+              <div class="block-list">
+                <template x-for="(b, index) in blocks" :key="b.id">
+                  <div class="block-item">
+                    <div class="block-item-header">
+                      <strong x-text="b.type"></strong>
+                      <div class="block-item-actions">
+                        <button class="btn-icon" @click="moveBlock(index, -1)" :disabled="index === 0" title="Omhoog">↑</button>
+                        <button class="btn-icon" @click="moveBlock(index, 1)" :disabled="index === blocks.length - 1" title="Omlaag">↓</button>
+                        <button class="btn-icon" @click="deleteBlock(b)" title="Verwijderen">✕</button>
+                      </div>
+                    </div>
+                    <textarea class="block-content-editor" rows="3" :value="JSON.stringify(b.content, null, 2)" @change="updateBlockContent(b, $event.target.value)"></textarea>
+                  </div>
+                </template>
+                <p class="muted" x-show="blocks.length === 0">Deze pagina heeft nog geen blocks.</p>
+              </div>
+            </div>
+          </template>
+        </section>
+
+        <!-- Media -->
+        <section x-show="currentView === 'media'">
+          <div class="section-header">
+            <h2>Media</h2>
+            <form @submit.prevent class="inline-form">
+              <input type="file" @change="uploadMedia($event)" accept="image/jpeg,image/png,image/webp,image/svg+xml">
+            </form>
+          </div>
+          <p class="error" x-show="mediaError" x-text="mediaError"></p>
+          <div class="media-grid">
+            <template x-for="m in media" :key="m.id">
+              <div class="media-card">
+                <img :src="'/uploads/' + m.filename" :alt="m.alt_text || m.original_name" loading="lazy">
+                <p class="media-name" x-text="m.original_name"></p>
+                <button class="btn btn-sm btn-danger" @click="deleteMedia(m)">Verwijderen</button>
+              </div>
+            </template>
+          </div>
+          <p class="muted" x-show="media.length === 0">Nog geen media geüpload.</p>
+        </section>
+
+        <!-- Navigation -->
+        <section x-show="currentView === 'navigation'">
+          <div class="section-header">
+            <h2>Navigatie</h2>
+          </div>
+          <form class="inline-form" @submit.prevent="createNavItem">
+            <input type="text" x-model="newNavItem.label" placeholder="Label" required maxlength="50">
+            <select x-model="newNavItem.page_id">
+              <option value="">Geen pagina (extern)</option>
+              <template x-for="p in pages" :key="p.id">
+                <option :value="p.id" x-text="p.name"></option>
+              </template>
+            </select>
+            <input type="text" x-model="newNavItem.url" placeholder="Of extern URL (/pad of https://...)">
+            <button type="submit" class="btn btn-primary btn-sm" :disabled="loading">Toevoegen</button>
+          </form>
+          <p class="error" x-show="navError" x-text="navError"></p>
+
+          <ul class="nav-item-list">
+            <template x-for="(item, index) in navItemsList" :key="item.id">
+              <li>
+                <span x-text="item.label"></span>
+                <span class="muted" x-text="item.url || (pages.find(p => p.id === item.page_id)?.name ?? '')"></span>
+                <span class="spacer"></span>
+                <button class="btn-icon" @click="moveNavItem(index, -1)" :disabled="index === 0">↑</button>
+                <button class="btn-icon" @click="moveNavItem(index, 1)" :disabled="index === navItemsList.length - 1">↓</button>
+                <button class="btn-icon" @click="deleteNavItem(item)">✕</button>
+              </li>
+            </template>
+          </ul>
+          <p class="muted" x-show="navItemsList.length === 0">Nog geen navigatie-items.</p>
+        </section>
+
+        <!-- Design -->
+        <section x-show="currentView === 'design'">
+          <h2>Ontwerp</h2>
+          <form class="settings-form" @submit.prevent="saveDesign">
+            <div class="form-group"><label>Primaire kleur</label><input type="color" x-model="designForm.primary_color"></div>
+            <div class="form-group"><label>Secundaire kleur</label><input type="color" x-model="designForm.secondary_color"></div>
+            <div class="form-group"><label>Achtergrondkleur</label><input type="color" x-model="designForm.background_color"></div>
+            <div class="form-group"><label>Tekstkleur</label><input type="color" x-model="designForm.text_color"></div>
+            <div class="form-group"><label>Lettertype</label><input type="text" x-model="designForm.font_family"></div>
+            <div class="form-group"><label>Border radius</label><input type="text" x-model="designForm.border_radius"></div>
+            <div class="form-group"><label>Custom CSS</label><textarea x-model="designForm.custom_css" rows="4"></textarea></div>
+            <p class="error" x-show="designError" x-text="designError"></p>
+            <button type="submit" class="btn btn-primary" :disabled="loading">Opslaan</button>
+          </form>
+        </section>
+
+        <!-- Settings -->
+        <section x-show="currentView === 'settings'">
+          <h2>Site-instellingen</h2>
+          <form class="settings-form" @submit.prevent="saveSiteSettings">
+            <div class="form-group"><label>Sitenaam</label><input type="text" x-model="siteForm.site_name" required maxlength="100"></div>
+            <div class="form-group"><label>Beschrijving</label><textarea x-model="siteForm.site_description" rows="2" maxlength="500"></textarea></div>
+            <div class="form-group"><label>Contact e-mail</label><input type="email" x-model="siteForm.contact_email"></div>
+            <div class="form-group"><label>Contact telefoon</label><input type="text" x-model="siteForm.contact_phone" maxlength="50"></div>
+            <div class="form-group"><label>Footer tekst</label><input type="text" x-model="siteForm.footer_text" maxlength="500"></div>
+            <p class="error" x-show="siteError" x-text="siteError"></p>
+            <button type="submit" class="btn btn-primary" :disabled="loading">Opslaan</button>
+          </form>
+        </section>
+
+        <!-- Preview -->
+        <section x-show="currentView === 'preview'">
+          <h2>Preview</h2>
+          <p class="muted">Live preview van de gepubliceerde site is nog niet beschikbaar in deze versie.</p>
+        </section>
+
+        <!-- Export -->
+        <section x-show="currentView === 'export'">
+          <h2>Exporteren</h2>
+          <p class="muted">Site-export naar een downloadbaar bestand is nog niet beschikbaar in deze versie.</p>
+        </section>
       </div>
     </div>
   </main>
@@ -169,7 +333,7 @@
           <input type="password" x-model="loginForm.password" required autocomplete="current-password">
         </div>
         <button type="submit" class="btn btn-primary btn-block" :disabled="loading">Inloggen</button>
-        <p v-if="loginError" class="error" x-text="loginError"></p>
+        <p class="error" x-show="loginError" x-text="loginError"></p>
       </form>
     </div>
   </div>
@@ -194,7 +358,7 @@
           <input type="password" x-model="setupForm.confirmPassword" required autocomplete="new-password">
         </div>
         <button type="submit" class="btn btn-primary btn-block" :disabled="loading">Account aanmaken</button>
-        <p v-if="setupError" class="error" x-text="setupError"></p>
+        <p class="error" x-show="setupError" x-text="setupError"></p>
       </form>
     </div>
   </div>

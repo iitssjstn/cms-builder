@@ -140,6 +140,14 @@ CREATE TABLE IF NOT EXISTS setup_status (
   completed_at DATETIME
 );
 
+INSERT OR IGNORE INTO setup_status (id, completed) VALUES (1, 0);
+
+-- App secrets (bv. session secret) - zodat er geen secrets in env vars nodig zijn
+CREATE TABLE IF NOT EXISTS app_secrets (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
 -- Sessions (voor express-session met SQLite)
 CREATE TABLE IF NOT EXISTS sessions (
   sid TEXT PRIMARY KEY,

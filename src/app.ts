@@ -1,13 +1,18 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import session from 'express-session';
 import connectSqlite3 from 'connect-sqlite3';
 import { config } from './config';
-import { getDb } from './db';
+import { getDb, getOrCreateSecret } from './db';
 import { securityMiddleware, cspNonceMiddleware } from './middleware/security';
-import { globalRateLimit, authRateLimit } from './middleware/rateLimit';
+import { globalRateLimit } from './middleware/rateLimit';
 import { csrfProtection, csrfErrorHandler } from './middleware/csrf';
 import authRoutes from './routes/auth';
 import projectRoutes from './routes/projects';
+import pageRoutes from './routes/pages';
+import blockRoutes from './routes/blocks';
+import mediaRoutes from './routes/media';
+import navigationRoutes from './routes/navigation';
+import settingsRoutes from './routes/settings';
 
 const app = express();
 const SQLiteStore = connectSqlite3(session);
@@ -32,10 +37,12 @@ const sessionStore = new SQLiteStore({
   dir: './data'
 });
 
+const sessionSecret = getOrCreateSecret('session_secret');
+
 app.use(session({
   name: config.sessionName,
-  secret: 'secret-is-in-database-not-env', // Placeholder, wordt overschreven door session store
-  store: sessionStore,
+  secret: sessionSecret,
+  store: sessionStore as unknown as session.Store,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -47,11 +54,16 @@ app.use(session({
 }));
 
 // CSRF protection (na session)
-app.use(csrfProtection);
+app.use(csrfProtection as express.RequestHandler);
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/projects', pageRoutes);
+app.use('/api/pages', blockRoutes);
+app.use('/api/projects', mediaRoutes);
+app.use('/api/projects', navigationRoutes);
+app.use('/api/projects', settingsRoutes);
 
 // Health checks
 app.get('/healthz', (req: Request, res: Response) => {
@@ -82,7 +94,7 @@ app.use((req: Request, res: Response) => {
 
 // Error handler
 app.use(csrfErrorHandler);
-app.use((err: Error, req: Request, res: Response, next: any) => {
+app.use((err: Error, req: Request, res: Response, _next: any) => {
   console.error('Server error:', err);
   res.status(500).json({ error: 'Interne serverfout' });
 });

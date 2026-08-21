@@ -1,5 +1,5 @@
 import helmet from 'helmet';
-import { config } from '../config';
+import crypto from 'crypto';
 
 export const securityMiddleware = helmet({
   contentSecurityPolicy: {

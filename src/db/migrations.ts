@@ -3,8 +3,10 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 export function runMigrations(db: Database) {
-  // Schema aanmaken
-  const schemaPath = join(process.cwd(), 'src/db/schema.sql');
+  // Schema aanmaken. __dirname wijst in dev naar src/db en na build naar
+  // dist/db, dus dit pad klopt in beide gevallen (schema.sql wordt door de
+  // build meegekopieerd, zie package.json "build" script).
+  const schemaPath = join(__dirname, 'schema.sql');
   const schema = readFileSync(schemaPath, 'utf-8');
   db.exec(schema);
   

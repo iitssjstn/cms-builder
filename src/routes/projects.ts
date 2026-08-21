@@ -134,9 +134,9 @@ router.post('/:projectId/duplicate', requireAuth, requireProjectAccess, (req: Re
   const newProjectId = result.lastInsertRowid as number;
   
   // Copy design settings
-  const design = db.prepare('SELECT * FROM design_settings WHERE project_id = ?').get(projectId);
+  const design = db.prepare('SELECT * FROM design_settings WHERE project_id = ?').get(projectId) as any;
   if (design) {
-    const { id: _, project_id, updated_at, ...designData } = design;
+    const { id: _id, project_id: _projectId, updated_at: _updatedAt, ...designData } = design;
     db.prepare(`
       INSERT INTO design_settings (project_id, ${Object.keys(designData).join(', ')})
       VALUES (?, ${Object.keys(designData).map(() => '?').join(', ')})
@@ -144,9 +144,9 @@ router.post('/:projectId/duplicate', requireAuth, requireProjectAccess, (req: Re
   }
   
   // Copy site settings
-  const site = db.prepare('SELECT * FROM site_settings WHERE project_id = ?').get(projectId);
+  const site = db.prepare('SELECT * FROM site_settings WHERE project_id = ?').get(projectId) as any;
   if (site) {
-    const { id: _, project_id, updated_at, ...siteData } = site;
+    const { id: _id, project_id: _projectId, updated_at: _updatedAt, ...siteData } = site;
     db.prepare(`
       INSERT INTO site_settings (project_id, ${Object.keys(siteData).join(', ')})
       VALUES (?, ${Object.keys(siteData).map(() => '?').join(', ')})
