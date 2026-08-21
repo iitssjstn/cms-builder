@@ -16,6 +16,17 @@ ENV npm_config_build_from_source=true
 COPY package*.json ./
 RUN npm ci
 
+# Forceer een verse, lokale compile van better-sqlite3 op dit exacte
+# Alpine(musl)-systeem. npm's eigen install-heuristiek (prebuild-install
+# met een 'build-from-source'-vlag) blijkt niet betrouwbaar de gedownloade,
+# tegen glibc gelinkte prebuilt binary te vervangen -- dus we roepen
+# node-gyp hier expliciet en direct aan, zodat er geen twijfel over bestaat
+# dat de binary daadwerkelijk op dit systeem gebouwd is.
+RUN rm -rf node_modules/better-sqlite3/build && \
+    cd node_modules/better-sqlite3 && \
+    ../.bin/node-gyp rebuild --release && \
+    test -f build/Release/better_sqlite3.node
+
 COPY . .
 RUN npm run build
 
