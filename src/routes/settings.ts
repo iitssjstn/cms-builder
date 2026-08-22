@@ -38,7 +38,11 @@ router.patch('/:projectId/design', requireAuth, requireProjectAccess, (req: Requ
   updates.push('updated_at = CURRENT_TIMESTAMP');
   values.push(projectId);
 
-  db.prepare(`UPDATE design_settings SET ${updates.join(', ')} WHERE project_id = ?`).run(...values);
+  const result = db.prepare(`UPDATE design_settings SET ${updates.join(', ')} WHERE project_id = ?`).run(...values);
+  if (result.changes === 0) {
+    db.prepare(`INSERT INTO design_settings (project_id, ${Object.keys(parseResult.data).join(', ')}) VALUES (?, ${Object.keys(parseResult.data).map(() => '?').join(', ')})`)
+      .run(projectId, ...Object.values(parseResult.data));
+  }
 
   const design = db.prepare('SELECT * FROM design_settings WHERE project_id = ?').get(projectId);
   res.json({ design });
