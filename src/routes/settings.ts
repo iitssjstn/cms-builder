@@ -35,14 +35,13 @@ router.patch('/:projectId/design', requireAuth, requireProjectAccess, (req: Requ
     return res.status(400).json({ error: 'Geen velden om bij te werken' });
   }
 
-  updates.push('updated_at = CURRENT_TIMESTAMP');
-  values.push(projectId);
-
   const existing = db.prepare('SELECT 1 FROM design_settings WHERE project_id = ?').get(projectId);
-  db.prepare(`UPDATE design_settings SET ${updates.join(', ')} WHERE project_id = ?`).run(...values);
+
   if (!existing) {
     db.prepare(`INSERT INTO design_settings (project_id, ${Object.keys(parseResult.data).join(', ')}) VALUES (?, ${Object.keys(parseResult.data).map(() => '?').join(', ')})`)
       .run(projectId, ...Object.values(parseResult.data));
+  } else {
+    db.prepare(`UPDATE design_settings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE project_id = ?`).run(...values, projectId);
   }
 
   const design = db.prepare('SELECT * FROM design_settings WHERE project_id = ?').get(projectId);
