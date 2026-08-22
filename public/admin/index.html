@@ -350,13 +350,20 @@
         <section x-show="currentView === 'design'">
           <h2>Ontwerp</h2>
           <form class="settings-form" @submit.prevent="saveDesign">
-            <div class="form-group"><label>Primaire kleur</label><input type="color" x-model="designForm.primary_color"></div>
-            <div class="form-group"><label>Secundaire kleur</label><input type="color" x-model="designForm.secondary_color"></div>
-            <div class="form-group"><label>Achtergrondkleur</label><input type="color" x-model="designForm.background_color"></div>
-            <div class="form-group"><label>Tekstkleur</label><input type="color" x-model="designForm.text_color"></div>
-            <div class="form-group"><label>Lettertype</label><input type="text" x-model="designForm.font_family"></div>
-            <div class="form-group"><label>Border radius</label><input type="text" x-model="designForm.border_radius"></div>
-            <div class="form-group"><label>Custom CSS</label><textarea x-model="designForm.custom_css" rows="4"></textarea></div>
+            <div class="design-panel-intro"><strong>Volledige controle per project</strong><span class="muted">Deze instellingen gelden alleen voor het actieve project en overschrijven de standaardstijl van de gekozen template.</span></div>
+            <div class="design-options-grid">
+              <div class="form-group"><label>Primaire kleur</label><div class="color-input"><input type="color" x-model="designForm.primary_color"><input type="text" x-model="designForm.primary_color" maxlength="7" pattern="^#[0-9a-fA-F]{6}$"></div></div>
+              <div class="form-group"><label>Secundaire kleur</label><div class="color-input"><input type="color" x-model="designForm.secondary_color"><input type="text" x-model="designForm.secondary_color" maxlength="7" pattern="^#[0-9a-fA-F]{6}$"></div></div>
+              <div class="form-group"><label>Achtergrondkleur</label><div class="color-input"><input type="color" x-model="designForm.background_color"><input type="text" x-model="designForm.background_color" maxlength="7" pattern="^#[0-9a-fA-F]{6}$"></div></div>
+              <div class="form-group"><label>Tekstkleur</label><div class="color-input"><input type="color" x-model="designForm.text_color"><input type="text" x-model="designForm.text_color" maxlength="7" pattern="^#[0-9a-fA-F]{6}$"></div></div>
+              <div class="form-group"><label>Lettertype tekst</label><input type="text" x-model="designForm.font_family" placeholder="Arial, sans-serif" maxlength="100"><small class="muted">Bijvoorbeeld: Arial, Georgia, monospace</small></div>
+              <div class="form-group"><label>Lettertype koppen</label><input type="text" x-model="designForm.heading_font_family" placeholder="Georgia, serif" maxlength="100"></div>
+              <div class="form-group"><label>Hoekradius</label><input type="text" x-model="designForm.border_radius" placeholder="0.5rem" maxlength="20"><small class="muted">Bijvoorbeeld: 0, 8px, 1rem of 999px</small></div>
+              <div class="form-group"><label>Basis spacing</label><input type="text" x-model="designForm.spacing_unit" placeholder="1rem" maxlength="20"><small class="muted">Bijvoorbeeld: 0.75rem, 1rem of 24px</small></div>
+            </div>
+            <div class="css-editor-heading"><div><label for="custom-css">Template CSS aanpassen</label><p class="muted">Gebruik de selectors hieronder om layout, header, hero, kaarten, knoppen, grids, footer en mobiel gedrag volledig aan te passen.</p></div><span class="badge" x-text="currentProject?.template || 'blank'"></span></div>
+            <textarea id="custom-css" class="css-editor" x-model="designForm.custom_css" rows="18" maxlength="10000" spellcheck="false" placeholder=".preview-hero {\n  min-height: 70vh;\n}\n\n.preview-header {\n  ...\n}"></textarea>
+            <details class="css-help"><summary>Beschikbare selectors en CSS-variabelen</summary><div class="css-help-grid"><code>body</code><span>Pagina, achtergrond, tekst en lettertype</span><code>.preview-nav</code><span>Algemene navigatie</span><code>.preview-header</code><span>Template-header, logo en navigatie</span><code>.preview-hero</code><span>Hero-sectie en headline</span><code>.preview-card</code><span>Kaarten en diensten</span><code>.preview-gallery</code><span>Galerij en afbeelding-grid</span><code>.preview-pricing-grid</code><span>Prijskaarten</span><code>.preview-blog-grid</code><span>Blogartikelen</span><code>.preview-testimonial-grid</code><span>Testimonials</span><code>.preview-cta</code><span>Call-to-action</span><code>.preview-component-footer</code><span>Footerblock</span><code>@media (max-width: 700px)</code><span>Mobiele aanpassingen</span><code>--primary</code><span>Primaire kleur</span><code>--secondary</code><span>Secundaire kleur</span><code>--background</code><span>Achtergrondkleur</span><code>--text</code><span>Tekstkleur</span><code>--radius</code><span>Hoekradius</span></div></details>
             <p class="error" x-show="designError" x-text="designError"></p>
             <button type="submit" class="btn btn-primary" :disabled="loading">Opslaan</button>
           </form>

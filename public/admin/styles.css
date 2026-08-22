@@ -26,6 +26,30 @@ h1, h2, h3 { margin: 0 0 0.5em; }
 
 .muted { color: var(--muted); }
 
+.design-panel-intro { display: grid; gap: .25rem; padding: 1rem; margin-bottom: 1rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: .5rem; }
+.design-options-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.design-options-grid .form-group { margin: 0; }
+.color-input { display: flex; align-items: center; gap: .5rem; }
+.color-input input[type="color"] { width: 3rem; height: 2.5rem; padding: .15rem; cursor: pointer; }
+.color-input input[type="text"] { flex: 1; }
+.form-group small { display: block; margin-top: .25rem; }
+.css-editor-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-top: 1.5rem; }
+.css-editor-heading label { font-weight: 700; }
+.css-editor-heading p { margin: .25rem 0 0; }
+.css-editor { width: 100%; min-height: 22rem; resize: vertical; padding: 1rem; border: 1px solid var(--border); border-radius: .5rem; background: #111827; color: #e5e7eb; font: .875rem/1.6 Consolas, 'Courier New', monospace; tab-size: 2; }
+.css-help { margin: 1rem 0; padding: .75rem 1rem; border: 1px solid var(--border); border-radius: .5rem; background: var(--surface); }
+.css-help summary { cursor: pointer; font-weight: 700; }
+.css-help-grid { display: grid; grid-template-columns: minmax(10rem, max-content) 1fr; gap: .5rem 1rem; margin-top: 1rem; align-items: baseline; }
+.css-help-grid code { color: var(--primary); font: .8rem Consolas, 'Courier New', monospace; }
+
+@media (max-width: 700px) {
+  .design-options-grid { grid-template-columns: 1fr; }
+  .css-editor-heading { display: block; }
+  .css-editor-heading .badge { display: inline-block; margin-top: .5rem; }
+  .css-help-grid { grid-template-columns: 1fr; gap: .25rem; }
+  .css-help-grid span { margin-bottom: .5rem; }
+}
+
 .error {
   color: var(--danger);
   font-size: 0.875rem;
