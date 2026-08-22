@@ -111,6 +111,56 @@ export const blockContentSchemas: Record<string, z.ZodSchema> = {
   spacer: z.object({
     size: z.enum(['xs', 'sm', 'md', 'lg', 'xl']).default('md'),
     custom_height: z.string().optional()
+  }),
+  header: z.object({
+    logo: z.string().max(100).default('Jouw merk'),
+    links: z.array(z.object({ label: z.string().max(50), url: z.string().max(200) })).max(8).default([]),
+    cta_text: z.string().max(50).optional(),
+    cta_url: z.string().max(200).optional()
+  }),
+  pricing: z.object({
+    title: z.string().max(200).default('Kies je plan'),
+    plans: z.array(z.object({ name: z.string().max(80), price: z.string().max(40), description: z.string().max(300).optional(), features: z.array(z.string().max(120)).max(12).default([]), cta_text: z.string().max(50).default('Start nu'), cta_url: z.string().max(200).default('#') })).min(1).max(4).default([])
+  }),
+  blog: z.object({
+    title: z.string().max(200).default('Laatste artikelen'),
+    posts: z.array(z.object({ title: z.string().max(160), excerpt: z.string().max(400), date: z.string().max(40).optional(), url: z.string().max(200).default('#') })).max(6).default([])
+  }),
+  faq: z.object({
+    title: z.string().max(200).default('Veelgestelde vragen'),
+    items: z.array(z.object({ question: z.string().max(200), answer: z.string().max(600) })).max(12).default([])
+  }),
+  testimonials: z.object({
+    title: z.string().max(200).default('Wat klanten zeggen'),
+    items: z.array(z.object({ quote: z.string().max(500), name: z.string().max(100), role: z.string().max(100).optional() })).max(6).default([])
+  }),
+  cta: z.object({
+    title: z.string().max(200),
+    text: z.string().max(500).optional(),
+    button_text: z.string().max(50).default('Neem contact op'),
+    button_url: z.string().max(200).default('#contact')
+  }),
+  footer: z.object({
+    text: z.string().max(300).optional(),
+    links: z.array(z.object({ label: z.string().max(50), url: z.string().max(200) })).max(10).default([])
+  }),
+  auth: z.object({
+    mode: z.enum(['login', 'register']).default('login'),
+    title: z.string().max(160).default('Welkom terug'),
+    subtitle: z.string().max(300).optional(),
+    button_text: z.string().max(50).default('Inloggen')
+  }),
+  dashboard: z.object({
+    title: z.string().max(160).default('Dashboard'),
+    stats: z.array(z.object({ label: z.string().max(80), value: z.string().max(40), change: z.string().max(40).optional() })).max(6).default([]),
+    notice: z.string().max(300).optional()
+  }),
+  notfound: z.object({
+    code: z.string().max(10).default('404'),
+    title: z.string().max(160).default('Pagina niet gevonden'),
+    text: z.string().max(300).optional(),
+    button_text: z.string().max(50).default('Terug naar home'),
+    button_url: z.string().max(200).default('/')
   })
 };
 
@@ -161,7 +211,8 @@ export const createBlockSchema = z.object({
   type: z.enum([
     'heading', 'text', 'image', 'button', 'link', 'video',
     'container', 'columns', 'hero', 'card', 'gallery',
-    'contact-form', 'divider', 'spacer'
+    'contact-form', 'divider', 'spacer', 'header', 'pricing', 'blog', 'faq',
+    'testimonials', 'cta', 'footer', 'auth', 'dashboard', 'notfound'
   ]),
   content: z.record(z.unknown()).default({}),
   styles: blockStylesSchema.default({}),

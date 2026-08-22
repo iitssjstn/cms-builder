@@ -46,5 +46,55 @@ export const layouts: Record<string, { label: string; description: string; block
       { type: 'card', content: { title: 'Projectnaam', description: 'Beschrijf kort wat je hebt gemaakt en wat het resultaat was.', cta_text: 'Bekijk project', cta_url: '#' } },
       { type: 'card', content: { title: 'Nog een project', description: 'Voeg hier een tweede voorbeeld uit je portfolio toe.', cta_text: 'Bekijk project', cta_url: '#' } }
     ]
+  },
+  header: {
+    label: 'Header en navigatie',
+    description: 'Een professionele navigatie met merknaam en actieknop.',
+    blocks: [{ type: 'header', content: { logo: 'Jouw merk', links: [{ label: 'Over ons', url: '/over-ons' }, { label: 'Diensten', url: '/diensten' }, { label: 'Contact', url: '/contact' }], cta_text: 'Start gesprek', cta_url: '/contact' } }]
+  },
+  pricing: {
+    label: 'Prijstabel',
+    description: 'Vergelijk abonnementen of diensten in duidelijke kaarten.',
+    blocks: [{ type: 'pricing', content: { title: 'Kies het pakket dat bij je past', plans: [{ name: 'Start', price: '€29', description: 'Voor kleine teams', features: ['Basisfuncties', 'E-mail support'], cta_text: 'Kies Start', cta_url: '#' }, { name: 'Groei', price: '€79', description: 'Voor groeiende bedrijven', features: ['Alle basisfuncties', 'Prioriteit support', 'Rapportages'], cta_text: 'Kies Groei', cta_url: '#' }, { name: 'Pro', price: '€149', description: 'Voor maximale slagkracht', features: ['Alles van Groei', 'Persoonlijke begeleiding'], cta_text: 'Kies Pro', cta_url: '#' }] } }]
+  },
+  blog: {
+    label: 'Blogoverzicht',
+    description: 'Een overzicht met artikelen, datum en doorklikactie.',
+    blocks: [{ type: 'blog', content: { title: 'Laatste inzichten', posts: [{ title: 'Zo begin je goed', excerpt: 'Praktische tips om vandaag de eerste stap te zetten.', date: '12 juni 2026', url: '#' }, { title: 'Wat klanten waarderen', excerpt: 'Leer welke keuzes zorgen voor een betere ervaring.', date: '4 juni 2026', url: '#' }, { title: 'Achter de schermen', excerpt: 'Een kijkje in onze aanpak en dagelijkse praktijk.', date: '28 mei 2026', url: '#' }] } }]
+  },
+  faq: {
+    label: 'Veelgestelde vragen',
+    description: 'Uitklapbare vragen en antwoorden voor extra duidelijkheid.',
+    blocks: [{ type: 'faq', content: { title: 'Veelgestelde vragen', items: [{ question: 'Hoe werkt het?', answer: 'Je kiest een layout, past de teksten aan en publiceert wanneer je klaar bent.' }, { question: 'Kan ik later wijzigen?', answer: 'Ja. Alle onderdelen blijven afzonderlijk bewerkbaar.' }, { question: 'Is de website responsive?', answer: 'Ja, de layouts zijn ontworpen voor desktop, tablet en mobiel.' }] } }]
+  },
+  testimonials: {
+    label: 'Testimonials',
+    description: 'Social proof met klantquotes en functies.',
+    blocks: [{ type: 'testimonials', content: { title: 'Wat klanten zeggen', items: [{ quote: 'We hadden binnen een dag een professionele basis staan.', name: 'Sanne de Vries', role: 'Eigenaar, Studio Noord' }, { quote: 'De builder maakt keuzes begrijpelijk voor het hele team.', name: 'Mark Jansen', role: 'Marketingmanager' }] } }]
+  },
+  cta: {
+    label: 'Call-to-action',
+    description: 'Een opvallende afsluiting die bezoekers in beweging brengt.',
+    blocks: [{ type: 'cta', content: { title: 'Klaar om te beginnen?', text: 'Plan een vrijblijvend gesprek en ontdek wat er mogelijk is.', button_text: 'Neem contact op', button_url: '/contact' } }]
+  },
+  footer: {
+    label: 'Footer',
+    description: 'Een nette footer met links en korte bedrijfsinformatie.',
+    blocks: [{ type: 'footer', content: { text: 'Jouw merk - Samen maken we vooruitgang.', links: [{ label: 'Privacy', url: '#' }, { label: 'Contact', url: '/contact' }] } }]
+  },
+  auth: {
+    label: 'Loginpagina',
+    description: 'Een rustige login- of registratiepagina.',
+    blocks: [{ type: 'auth', content: { mode: 'login', title: 'Welkom terug', subtitle: 'Log in om verder te gaan.', button_text: 'Inloggen' } }]
+  },
+  dashboard: {
+    label: 'Dashboard',
+    description: 'Een overzicht met statistieken en statusinformatie.',
+    blocks: [{ type: 'dashboard', content: { title: 'Overzicht', notice: 'Alles loopt volgens plan.', stats: [{ label: 'Bezoekers', value: '12.480', change: '+12%' }, { label: 'Conversie', value: '4,8%', change: '+0,6%' }, { label: 'Projecten', value: '24' }, { label: 'Open taken', value: '7' }] } }]
+  },
+  notfound: {
+    label: '404-pagina',
+    description: 'Een vriendelijke foutpagina die bezoekers terugbrengt.',
+    blocks: [{ type: 'notfound', content: { code: '404', title: 'Deze pagina bestaat niet', text: 'Misschien is de link verouderd of is de pagina verplaatst.', button_text: 'Terug naar home', button_url: '/' } }]
   }
 };

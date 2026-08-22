@@ -89,6 +89,24 @@ router.post('/:pageId/blocks/layout', requireAuth, requirePageAccess, (req: Requ
 });
 
 // Update block
+router.post('/:pageId/blocks/:blockId/duplicate', requireAuth, requirePageAccess, (req: Request, res: Response) => {
+  const blockId = parseInt(req.params.blockId, 10);
+  const db = getDb();
+  const existing = db.prepare('SELECT * FROM blocks WHERE id = ? AND page_id = ?').get(blockId, req.page!.id) as any;
+  if (!existing) {
+    return res.status(404).json({ error: 'Block niet gevonden' });
+  }
+
+  const order = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as maxOrder FROM blocks WHERE page_id = ? AND parent_id IS ?')
+    .get(req.page!.id, existing.parent_id) as { maxOrder: number };
+  const result = db.prepare(`
+    INSERT INTO blocks (page_id, type, content, styles, responsive_styles, sort_order, parent_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(req.page!.id, existing.type, existing.content, existing.styles, existing.responsive_styles, order.maxOrder + 1, existing.parent_id);
+  const block = db.prepare('SELECT * FROM blocks WHERE id = ?').get(result.lastInsertRowid) as any;
+  res.status(201).json({ block });
+});
+
 router.patch('/:pageId/blocks/:blockId', requireAuth, requirePageAccess, (req: Request, res: Response) => {
   const blockId = parseInt(req.params.blockId, 10);
   const db = getDb();

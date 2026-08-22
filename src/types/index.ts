@@ -58,7 +58,17 @@ export type BlockType =
   | 'gallery'
   | 'contact-form'
   | 'divider'
-  | 'spacer';
+  | 'spacer'
+  | 'header'
+  | 'pricing'
+  | 'blog'
+  | 'faq'
+  | 'testimonials'
+  | 'cta'
+  | 'footer'
+  | 'auth'
+  | 'dashboard'
+  | 'notfound';
 
 export interface Media {
   id: number;

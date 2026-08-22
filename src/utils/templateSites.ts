@@ -19,6 +19,7 @@ export const templateSites: Record<string, Record<string, LayoutBlock[]>> = {
       { type: 'card', content: { title: 'Luisteren', description: 'We starten bij de behoefte van je klant en je team.' } },
       { type: 'card', content: { title: 'Vereenvoudigen', description: 'We brengen focus aan en maken keuzes overzichtelijk.' } },
       { type: 'card', content: { title: 'Verbeteren', description: 'We testen, leren en bouwen stap voor stap verder.' } }
+      ,{ type: 'testimonials', content: { title: 'Wat klanten zeggen', items: [{ quote: 'De aanpak gaf ons rust en richting.', name: 'Lotte Vermeer', role: 'Directeur' }] } }
     ],
     diensten: [
       { type: 'heading', content: { level: 'h1', text: 'Diensten die resultaat opleveren' } },
@@ -26,11 +27,13 @@ export const templateSites: Record<string, Record<string, LayoutBlock[]>> = {
       { type: 'card', content: { title: 'Merk en positionering', description: 'Een duidelijk verhaal waarmee je organisatie herkenbaar en relevant wordt.' } },
       { type: 'card', content: { title: 'Website en platform', description: 'Een snelle, toegankelijke digitale ervaring die bezoekers in beweging brengt.' } },
       { type: 'card', content: { title: 'Doorontwikkeling', description: 'Blijf verbeteren met inzichten uit data, gebruikers en je eigen team.' } }
+      ,{ type: 'pricing', content: { title: 'Samenwerken kan op verschillende manieren', plans: [{ name: 'Sparren', price: 'Vanaf €450', features: ['Sessie van 2 uur', 'Concreet actieplan'], cta_text: 'Plan sessie', cta_url: '/contact' }, { name: 'Traject', price: 'Op maat', features: ['Strategie en uitvoering', 'Vaste contactpersoon'], cta_text: 'Bespreek traject', cta_url: '/contact' }] } }
     ],
     contact: [
       { type: 'heading', content: { level: 'h1', text: 'Vertel ons over je uitdaging' } },
       { type: 'text', content: { content: 'Laat je gegevens achter en we nemen binnen twee werkdagen contact met je op.' } },
       { type: 'contact-form', content: { fields: [{ type: 'text', name: 'name', label: 'Naam', required: true }, { type: 'email', name: 'email', label: 'E-mail', required: true }, { type: 'textarea', name: 'message', label: 'Waar kunnen we mee helpen?', required: true }], submit_text: 'Versturen', success_message: 'Bedankt, we nemen snel contact op.' } }
+      ,{ type: 'faq', content: { title: 'Veelgestelde vragen', items: [{ question: 'Wanneer hoor ik van jullie?', answer: 'Binnen twee werkdagen.' }, { question: 'Werken jullie ook op afstand?', answer: 'Ja, we werken met teams in heel Nederland.' }] } }
     ]
   },
   portfolio: {

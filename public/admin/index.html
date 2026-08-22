@@ -197,7 +197,7 @@
               <form class="inline-form" @submit.prevent="createBlock">
                 <select x-model="newBlock.type" @change="resetNewBlockContent">
                   <template x-for="t in blockTypes" :key="t">
-                    <option :value="t" x-text="t"></option>
+                    <option :value="t" x-text="blockLabel(t)"></option>
                   </template>
                 </select>
                 <div class="builder-fields">
@@ -207,9 +207,16 @@
                   <div class="form-row" x-show="newBlock.type === 'button' || newBlock.type === 'link'"><div class="form-group"><label>Tekst op de knop</label><input type="text" x-model="newBlock.content.text" placeholder="Lees meer"></div><div class="form-group"><label>Waar gaat de knop heen?</label><input type="url" x-model="newBlock.content.url" placeholder="https://... of /contact"></div></div>
                   <div class="form-group" x-show="newBlock.type === 'hero'"><label>Grote titel</label><input type="text" x-model="newBlock.content.headline" placeholder="Jouw belangrijkste boodschap"><label>Ondertekst</label><textarea x-model="newBlock.content.subheadline" rows="2" placeholder="Leg kort uit wat je aanbiedt"></textarea><label>Knoptekst (optioneel)</label><input type="text" x-model="newBlock.content.cta_text" placeholder="Ontdek meer"><label>Link van de knop (optioneel)</label><input type="url" x-model="newBlock.content.cta_url" placeholder="/contact"></div>
                   <div class="form-group" x-show="newBlock.type === 'card'"><label>Titel</label><input type="text" x-model="newBlock.content.title" placeholder="Titel van de kaart"><label>Beschrijving</label><textarea x-model="newBlock.content.description" rows="3" placeholder="Korte beschrijving"></textarea><label>Knoptekst (optioneel)</label><input type="text" x-model="newBlock.content.cta_text" placeholder="Lees meer"><label>Link (optioneel)</label><input type="url" x-model="newBlock.content.cta_url" placeholder="/meer-informatie"></div>
+                  <div class="form-group" x-show="['pricing','blog','faq','testimonials'].includes(newBlock.type)"><label>Titel van dit onderdeel</label><input type="text" x-model="newBlock.content.title" placeholder="Bijvoorbeeld: Waarom klanten voor ons kiezen"></div>
+                  <div class="form-group" x-show="newBlock.type === 'cta'"><label>CTA-titel</label><input type="text" x-model="newBlock.content.title" placeholder="Klaar om te beginnen?"><label>Tekst</label><textarea x-model="newBlock.content.text" rows="2" placeholder="Korte overtuigende tekst"></textarea><label>Knoptekst</label><input type="text" x-model="newBlock.content.button_text" placeholder="Neem contact op"></div>
+                  <div class="form-group" x-show="newBlock.type === 'header'"><label>Merknaam</label><input type="text" x-model="newBlock.content.logo" placeholder="Jouw merk"></div>
+                  <div class="form-group" x-show="newBlock.type === 'footer'"><label>Footertekst</label><input type="text" x-model="newBlock.content.text" placeholder="Jouw merk"></div>
+                  <div class="form-group" x-show="newBlock.type === 'auth'"><label>Pagina titel</label><input type="text" x-model="newBlock.content.title"><label>Uitleg</label><input type="text" x-model="newBlock.content.subtitle"></div>
+                  <div class="form-group" x-show="newBlock.type === 'dashboard'"><label>Dashboardtitel</label><input type="text" x-model="newBlock.content.title"><label>Melding bovenaan (optioneel)</label><input type="text" x-model="newBlock.content.notice"></div>
+                  <div class="form-group" x-show="newBlock.type === 'notfound'"><label>Foutmelding</label><input type="text" x-model="newBlock.content.title"><label>Uitleg</label><textarea x-model="newBlock.content.text" rows="2"></textarea></div>
                   <div class="form-group" x-show="newBlock.type === 'divider'"><label>Stijl van de scheidingslijn</label><select x-model="newBlock.content.variant"><option value="solid">Eenvoudig</option><option value="dashed">Gestreept</option><option value="dotted">Gestippeld</option><option value="double">Dubbel</option></select></div>
                   <div class="form-group" x-show="newBlock.type === 'spacer'"><label>Hoeveel ruimte?</label><select x-model="newBlock.content.size"><option value="xs">Klein</option><option value="sm">Compact</option><option value="md">Normaal</option><option value="lg">Groot</option><option value="xl">Extra groot</option></select></div>
-                  <p class="muted builder-help" x-show="['container','columns','video','gallery','contact-form'].includes(newBlock.type)">Dit onderdeel krijgt eerst een standaardopmaak. Je kunt de inhoud daarna verder aanpassen via de instellingen.</p>
+                  <p class="muted builder-help" x-show="['container','columns','video','gallery','contact-form','pricing','blog','faq','testimonials','cta','header','footer','auth','dashboard','notfound'].includes(newBlock.type)">Dit onderdeel wordt toegevoegd met een professioneel voorbeeld. Je kunt het daarna via Bewerken aanpassen.</p>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm" :disabled="loading">Block toevoegen</button>
               </form>
@@ -224,6 +231,7 @@
                         <button class="btn-icon" @click="moveBlock(index, -1)" :disabled="index === 0" title="Omhoog">↑</button>
                         <button class="btn-icon" @click="moveBlock(index, 1)" :disabled="index === blocks.length - 1" title="Omlaag">↓</button>
                         <button class="btn btn-sm" @click="editBlock(b)">Bewerken</button>
+                        <button class="btn btn-sm" @click="duplicateBlock(b)">Kopiëren</button>
                         <button class="btn-icon" @click="deleteBlock(b)" title="Verwijderen">✕</button>
                       </div>
                     </div>
@@ -243,9 +251,16 @@
                     <div class="form-row" x-show="editingBlock?.type === 'button' || editingBlock?.type === 'link'"><div class="form-group"><label>Tekst</label><input type="text" x-model="editingBlock.content.text"></div><div class="form-group"><label>Link</label><input type="url" x-model="editingBlock.content.url"></div></div>
                     <div class="form-group" x-show="editingBlock?.type === 'hero'"><label>Grote titel</label><input type="text" x-model="editingBlock.content.headline"><label>Ondertekst</label><textarea x-model="editingBlock.content.subheadline" rows="3"></textarea><label>Knoptekst</label><input type="text" x-model="editingBlock.content.cta_text"><label>Knoplink</label><input type="url" x-model="editingBlock.content.cta_url"></div>
                     <div class="form-group" x-show="editingBlock?.type === 'card'"><label>Titel</label><input type="text" x-model="editingBlock.content.title"><label>Beschrijving</label><textarea x-model="editingBlock.content.description" rows="3"></textarea><label>Knoptekst</label><input type="text" x-model="editingBlock.content.cta_text"><label>Link</label><input type="url" x-model="editingBlock.content.cta_url"></div>
+                    <div class="form-group" x-show="['pricing','blog','faq','testimonials'].includes(editingBlock?.type)"><label>Titel van dit onderdeel</label><input type="text" x-model="editingBlock.content.title"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'cta'"><label>CTA-titel</label><input type="text" x-model="editingBlock.content.title"><label>Tekst</label><textarea x-model="editingBlock.content.text" rows="3"></textarea><label>Knoptekst</label><input type="text" x-model="editingBlock.content.button_text"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'header'"><label>Merknaam</label><input type="text" x-model="editingBlock.content.logo"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'footer'"><label>Footertekst</label><input type="text" x-model="editingBlock.content.text"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'auth'"><label>Pagina titel</label><input type="text" x-model="editingBlock.content.title"><label>Uitleg</label><input type="text" x-model="editingBlock.content.subtitle"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'dashboard'"><label>Dashboardtitel</label><input type="text" x-model="editingBlock.content.title"><label>Melding bovenaan</label><input type="text" x-model="editingBlock.content.notice"></div>
+                    <div class="form-group" x-show="editingBlock?.type === 'notfound'"><label>Foutmelding</label><input type="text" x-model="editingBlock.content.title"><label>Uitleg</label><textarea x-model="editingBlock.content.text" rows="2"></textarea></div>
                     <div class="form-group" x-show="editingBlock?.type === 'divider'"><label>Stijl</label><select x-model="editingBlock.content.variant"><option value="solid">Eenvoudig</option><option value="dashed">Gestreept</option><option value="dotted">Gestippeld</option><option value="double">Dubbel</option></select></div>
                     <div class="form-group" x-show="editingBlock?.type === 'spacer'"><label>Hoeveel ruimte?</label><select x-model="editingBlock.content.size"><option value="xs">Klein</option><option value="sm">Compact</option><option value="md">Normaal</option><option value="lg">Groot</option><option value="xl">Extra groot</option></select></div>
-                    <p class="muted" x-show="editingBlock && !['heading','text','image','button','link','hero','card','divider','spacer'].includes(editingBlock.type)">Dit onderdeel gebruikt een standaardopmaak.</p>
+                    <p class="muted" x-show="editingBlock && !['heading','text','image','button','link','hero','card','divider','spacer','pricing','blog','faq','testimonials','cta','header','footer','auth','dashboard','notfound'].includes(editingBlock.type)">Dit onderdeel gebruikt een standaardopmaak.</p>
                   </div>
                   <p class="error" x-show="blockError" x-text="blockError"></p>
                   <div class="modal-actions"><button class="btn btn-secondary" @click="editingBlock = null">Annuleren</button><button class="btn btn-primary" @click="saveEditedBlock" :disabled="loading">Opslaan</button></div>

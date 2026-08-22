@@ -45,14 +45,24 @@ function app() {
     // Builder
     builderPage: null,
     blocks: [],
-    blockTypes: ['heading', 'text', 'image', 'button', 'link', 'video', 'container', 'columns', 'hero', 'card', 'gallery', 'contact-form', 'divider', 'spacer'],
+    blockTypes: ['heading', 'text', 'image', 'button', 'link', 'video', 'container', 'columns', 'hero', 'card', 'gallery', 'contact-form', 'pricing', 'blog', 'faq', 'testimonials', 'cta', 'header', 'footer', 'auth', 'dashboard', 'notfound', 'divider', 'spacer'],
     newBlock: { type: 'text', content: { content: '' } },
     editingBlock: null,
     layoutPresets: [
       { id: 'landing', label: 'Landingspagina', description: 'Introductie met duidelijke actieknop' },
       { id: 'business', label: 'Bedrijf', description: 'Diensten en kennismaking' },
       { id: 'contact', label: 'Contact', description: 'Contactinformatie en formulier' },
-      { id: 'portfolio', label: 'Portfolio', description: 'Projecten en voorbeelden' }
+      { id: 'portfolio', label: 'Portfolio', description: 'Projecten en voorbeelden' },
+      { id: 'header', label: 'Header', description: 'Navigatie en actieknop' },
+      { id: 'pricing', label: 'Prijzen', description: 'Vergelijkbare pakketten' },
+      { id: 'blog', label: 'Blog', description: 'Artikelenoverzicht' },
+      { id: 'faq', label: 'FAQ', description: 'Vragen en antwoorden' },
+      { id: 'testimonials', label: 'Reviews', description: 'Klantreacties' },
+      { id: 'cta', label: 'CTA', description: 'Actieblok' },
+      { id: 'footer', label: 'Footer', description: 'Footer met links' },
+      { id: 'auth', label: 'Login', description: 'Loginformulier' },
+      { id: 'dashboard', label: 'Dashboard', description: 'Statistieken en status' },
+      { id: 'notfound', label: '404', description: 'Vriendelijke foutpagina' }
     ],
     blockError: '',
 
@@ -372,6 +382,16 @@ function app() {
         card: { image: '', title: '', description: '', cta_text: '', cta_url: '' },
         gallery: { images: [], columns: 3, gap: '1rem' },
         'contact-form': { fields: [{ type: 'text', name: 'name', label: 'Naam', required: true }, { type: 'email', name: 'email', label: 'E-mail', required: true }, { type: 'textarea', name: 'message', label: 'Bericht', required: true }], submit_text: 'Versturen', success_message: 'Bedankt voor je bericht!' },
+        pricing: { title: 'Kies je plan', plans: [{ name: 'Start', price: '€29', features: ['Basisfuncties'], cta_text: 'Start nu', cta_url: '#' }] },
+        blog: { title: 'Laatste artikelen', posts: [{ title: 'Nieuw artikel', excerpt: 'Schrijf hier een korte introductie.', date: '', url: '#' }] },
+        faq: { title: 'Veelgestelde vragen', items: [{ question: 'Hoe werkt het?', answer: 'Geef hier een duidelijk antwoord.' }] },
+        testimonials: { title: 'Wat klanten zeggen', items: [{ quote: 'Een korte klantreactie.', name: 'Naam klant', role: 'Functie' }] },
+        cta: { title: 'Klaar om te beginnen?', text: 'Vertel bezoekers wat de volgende stap is.', button_text: 'Neem contact op', button_url: '#contact' },
+        header: { logo: 'Jouw merk', links: [{ label: 'Home', url: '/' }, { label: 'Contact', url: '/contact' }], cta_text: 'Start gesprek', cta_url: '/contact' },
+        footer: { text: 'Jouw merk - Samen maken we vooruitgang.', links: [{ label: 'Contact', url: '/contact' }] },
+        auth: { mode: 'login', title: 'Welkom terug', subtitle: 'Log in om verder te gaan.', button_text: 'Inloggen' },
+        dashboard: { title: 'Overzicht', stats: [{ label: 'Bezoekers', value: '1.240', change: '+12%' }], notice: 'Alles loopt volgens plan.' },
+        notfound: { code: '404', title: 'Deze pagina bestaat niet', text: 'Ga terug naar de startpagina.', button_text: 'Terug naar home', button_url: '/' },
         divider: { variant: 'solid' },
         spacer: { size: 'md' }
       };
@@ -379,7 +399,7 @@ function app() {
     },
 
     blockLabel(type) {
-      return { heading: 'Koptekst', text: 'Tekst', image: 'Afbeelding', button: 'Knop', link: 'Link', video: 'Video', container: 'Sectie', columns: 'Kolommen', hero: 'Hero-sectie', card: 'Kaart', gallery: 'Galerij', 'contact-form': 'Contactformulier', divider: 'Scheidingslijn', spacer: 'Ruimte' }[type] || type;
+      return { heading: 'Koptekst', text: 'Tekst', image: 'Afbeelding', button: 'Knop', link: 'Link', video: 'Video', container: 'Sectie', columns: 'Kolommen', hero: 'Hero-sectie', card: 'Kaart', gallery: 'Galerij', 'contact-form': 'Contactformulier', pricing: 'Prijstabel', blog: 'Blog', faq: 'Veelgestelde vragen', testimonials: 'Testimonials', cta: 'Call-to-action', header: 'Header', footer: 'Footer', auth: 'Login / registratie', dashboard: 'Dashboard', notfound: '404-pagina', divider: 'Scheidingslijn', spacer: 'Ruimte' }[type] || type;
     },
 
     blockSummary(block) {
@@ -430,6 +450,16 @@ function app() {
       if (!confirm('Block verwijderen?')) return;
       try {
         await this.api(`/api/pages/${this.builderPage.id}/blocks/${block.id}`, { method: 'DELETE' });
+        await this.loadBlocks();
+      } catch (e) {
+        this.blockError = e.message;
+      }
+    },
+
+    async duplicateBlock(block) {
+      this.blockError = '';
+      try {
+        await this.api(`/api/pages/${this.builderPage.id}/blocks/${block.id}/duplicate`, { method: 'POST' });
         await this.loadBlocks();
       } catch (e) {
         this.blockError = e.message;
