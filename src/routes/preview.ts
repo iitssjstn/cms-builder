@@ -118,6 +118,8 @@ export function renderPageHtml(page: any, project: any, design: any, site: any, 
     const href = item.page_slug ? `/preview/${encodeURIComponent(project.slug)}/${encodeURIComponent(item.page_slug)}` : item.url || '#';
     return `<a href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
   }).join('');
+  const hasHeaderBlock = blocks.some(block => block.type === 'header' && block.parent_id === null);
+  const previewNavigation = hasHeaderBlock ? '' : `<nav class="preview-nav">${navHtml}</nav>`;
 
   const fontFamily = escapeHtml(design?.font_family || 'system-ui, sans-serif');
   const headingFont = escapeHtml(design?.heading_font_family || fontFamily);
@@ -144,7 +146,7 @@ ${customCss}
 </style>
 </head>
 <body class="${templateClass}">
-<nav class="preview-nav">${navHtml}</nav>
+${previewNavigation}
 <main class="preview-page">${renderBlocks(null)}</main>
 <footer class="preview-footer">${escapeHtml(site?.footer_text || site?.site_name || project.name)}</footer>
 </body>

@@ -3,6 +3,7 @@ import { LayoutBlock } from './layouts';
 export const templateSites: Record<string, Record<string, LayoutBlock[]>> = {
   business: {
     home: [
+      { type: 'header', content: { logo: 'Helder Bureau', links: [{ label: 'Over ons', url: '/over-ons' }, { label: 'Diensten', url: '/diensten' }, { label: 'Contact', url: '/contact' }], cta_text: 'Plan een gesprek', cta_url: '/contact' } },
       { type: 'hero', content: { headline: 'Samen bouwen aan groei', subheadline: 'Praktische strategie en digitale oplossingen voor organisaties die vooruit willen.', cta_text: 'Plan een gesprek', cta_url: '/contact', text_align: 'left' } },
       { type: 'heading', content: { level: 'h2', text: 'Waar we je mee helpen' } },
       { type: 'card', content: { title: 'Strategie', description: 'Van eerste idee tot helder plan met concrete stappen en meetbare doelen.', cta_text: 'Ontdek strategie', cta_url: '/diensten' } },
@@ -38,6 +39,7 @@ export const templateSites: Record<string, Record<string, LayoutBlock[]>> = {
   },
   portfolio: {
     home: [
+      { type: 'header', content: { logo: 'Atelier Nova', links: [{ label: 'Projecten', url: '/projecten' }, { label: 'Over mij', url: '/over-mij' }, { label: 'Contact', url: '/contact' }], cta_text: 'Bekijk mijn werk', cta_url: '/projecten' } },
       { type: 'hero', content: { headline: 'Digitale producten met aandacht gemaakt', subheadline: 'Ik ontwerp heldere merken, websites en interfaces voor ambitieuze teams.', cta_text: 'Bekijk mijn werk', cta_url: '/projecten', text_align: 'left' } },
       { type: 'heading', content: { level: 'h2', text: 'Uitgelicht werk' } },
       { type: 'card', content: { title: 'Merkidentiteit voor Nova', description: 'Een frisse identiteit en website voor een groeiend technologiebedrijf.', cta_text: 'Bekijk project', cta_url: '/projecten' } },
@@ -65,6 +67,7 @@ export const templateSites: Record<string, Record<string, LayoutBlock[]>> = {
   },
   restaurant: {
     home: [
+      { type: 'header', content: { logo: 'Tafel 12', links: [{ label: 'Menu', url: '/menu' }, { label: 'Reserveren', url: '/reserveren' }, { label: 'Contact', url: '/contact' }], cta_text: 'Reserveer', cta_url: '/reserveren' } },
       { type: 'hero', content: { headline: 'Smaakvol tafelen, dicht bij huis', subheadline: 'Seizoensgerechten, lokale ingrediënten en een warme tafel voor elk moment.', cta_text: 'Reserveer een tafel', cta_url: '/reserveren', text_align: 'center' } },
       { type: 'heading', content: { level: 'h2', text: 'Vanavond op het menu' } },
       { type: 'card', content: { title: 'Kleine gerechten', description: 'Om samen te delen, met groenten uit het seizoen en brood uit eigen oven.' } },
@@ -94,6 +97,7 @@ export const templateSites: Record<string, Record<string, LayoutBlock[]>> = {
   },
   landing: {
     home: [
+      { type: 'header', content: { logo: 'Startpunt', links: [{ label: 'Voordelen', url: '#voordelen' }, { label: 'Werkwijze', url: '#werkwijze' }, { label: 'Contact', url: '#contact' }], cta_text: 'Begin vandaag', cta_url: '#contact' } },
       { type: 'hero', content: { headline: 'Maak ruimte voor wat belangrijk is', subheadline: 'Een heldere service voor mensen die sneller van idee naar resultaat willen.', cta_text: 'Start vandaag', cta_url: '#contact', text_align: 'center' } },
       { type: 'heading', content: { level: 'h2', text: 'Eenvoudig beginnen' } },
       { type: 'text', content: { content: 'Leg uit wat je aanbiedt, voor wie het is en welke volgende stap bezoekers kunnen zetten.' } },
