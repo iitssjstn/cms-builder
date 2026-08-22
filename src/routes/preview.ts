@@ -8,7 +8,7 @@ router.get('/template/:templateId', (req: Request, res: Response) => {
   const template = fullTemplates[req.params.templateId];
   if (!template) return res.status(404).send('Template niet gevonden');
   const page = template.pages[0];
-  const project = { name: template.label, slug: template.id };
+  const project = { name: template.label, slug: template.id, template: template.id };
   const [primary, secondary, background, text, font, headingFont, radius] = template.colors;
   const design = { primary_color: primary, secondary_color: secondary, background_color: background, text_color: text, font_family: font, heading_font_family: headingFont, border_radius: radius };
   const site = { site_name: template.label, site_description: template.description, footer_text: `Voorbeeldtemplate: ${template.label}` };
@@ -70,7 +70,7 @@ function renderBlock(block: PreviewBlock, children: string): string {
     case 'contact-form':
       return `<form class="preview-form"${attributes}>${(content.fields || []).map((field: any) => `<label>${escapeHtml(field.label)}${field.type === 'textarea' ? `<textarea name="${escapeHtml(field.name)}" placeholder="${escapeHtml(field.placeholder)}"${field.required ? ' required' : ''}></textarea>` : `<input type="${escapeHtml(field.type === 'select' ? 'text' : field.type)}" name="${escapeHtml(field.name)}" placeholder="${escapeHtml(field.placeholder)}"${field.required ? ' required' : ''}>`}</label>`).join('')}<button class="preview-button" type="submit">${escapeHtml(content.submit_text || 'Versturen')}</button></form>`;
     case 'header':
-      return `<header class="preview-header"${attributes}><a class="preview-logo" href="/">${escapeHtml(content.logo)}</a><nav>${(content.links || []).map((link: any) => `<a href="${escapeHtml(link.url)}">${escapeHtml(link.label)}</a>`).join('')}</nav>${content.cta_text ? `<a class="preview-button" href="${escapeHtml(content.cta_url || '#')}">${escapeHtml(content.cta_text)}</a>` : ''}</header>`;
+      return `<header class="preview-header${content.variant ? ` preview-header-${escapeHtml(content.variant)}` : ''}"${attributes}><a class="preview-logo" href="/">${escapeHtml(content.logo)}</a><nav>${(content.links || []).map((link: any) => `<a href="${escapeHtml(link.url)}">${escapeHtml(link.label)}</a>`).join('')}</nav>${content.cta_text ? `<a class="preview-button" href="${escapeHtml(content.cta_url || '#')}">${escapeHtml(content.cta_text)}</a>` : ''}</header>`;
     case 'pricing':
       return `<section class="preview-pricing"${attributes}><h2>${escapeHtml(content.title)}</h2><div class="preview-pricing-grid">${(content.plans || []).map((plan: any) => `<article class="preview-plan"><h3>${escapeHtml(plan.name)}</h3><strong>${escapeHtml(plan.price)}</strong>${plan.description ? `<p>${escapeHtml(plan.description)}</p>` : ''}<ul>${(plan.features || []).map((feature: string) => `<li>${escapeHtml(feature)}</li>`).join('')}</ul><a class="preview-button" href="${escapeHtml(plan.cta_url || '#')}">${escapeHtml(plan.cta_text || 'Start nu')}</a></article>`).join('')}</div></section>`;
     case 'blog':
@@ -122,6 +122,7 @@ export function renderPageHtml(page: any, project: any, design: any, site: any, 
   const fontFamily = escapeHtml(design?.font_family || 'system-ui, sans-serif');
   const headingFont = escapeHtml(design?.heading_font_family || fontFamily);
   const customCss = site ? String(design?.custom_css || '') : '';
+  const templateClass = `template-${String(project?.template || '').toLowerCase().replace(/[^a-z0-9-]/g, '') || 'default'}`;
 
   return `<!doctype html>
 <html lang="nl">
@@ -129,6 +130,8 @@ export function renderPageHtml(page: any, project: any, design: any, site: any, 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/preview.css">
+<link rel="stylesheet" href="/template-themes.css">
+<link rel="stylesheet" href="/template-headers.css">
 <title>${escapeHtml(page.seo_title || page.title || site?.site_name || project.name)}</title>
 <meta name="description" content="${escapeHtml(page.seo_description || site?.site_description || '')}">
 <style>
@@ -140,7 +143,7 @@ ${customCss}
 .preview-button:hover{filter:brightness(.92);transform:translateY(-1px)}.preview-button:focus-visible,.preview-nav a:focus-visible,.preview-header a:focus-visible,.preview-component-footer a:focus-visible,summary:focus-visible{outline:3px solid var(--secondary);outline-offset:3px}.preview-plan:hover,.preview-post:hover,.preview-testimonial-grid blockquote:hover{border-color:var(--primary);transform:translateY(-2px);transition:transform .18s ease,border-color .18s ease}
 </style>
 </head>
-<body>
+<body class="${templateClass}">
 <nav class="preview-nav">${navHtml}</nav>
 <main class="preview-page">${renderBlocks(null)}</main>
 <footer class="preview-footer">${escapeHtml(site?.footer_text || site?.site_name || project.name)}</footer>

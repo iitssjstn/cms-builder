@@ -41,6 +41,8 @@ router.get('/:projectId/export', requireAuth, requireProjectAccess, (req: Reques
     const exportPrefix = page.slug === 'home' ? './' : '../';
     const html = renderPageHtml(page, project, design, site, blocks, navigation)
       .replace('href="/preview.css"', `href="${exportPrefix}preview.css"`)
+      .replace('href="/template-themes.css"', `href="${exportPrefix}template-themes.css"`)
+      .replace('href="/template-headers.css"', `href="${exportPrefix}template-headers.css"`)
       .replaceAll('/uploads/', 'uploads/')
       .replaceAll(`/preview/${encodeURIComponent(project.slug)}/home`, `${exportPrefix}index.html`)
       .replace(new RegExp(`/preview/${encodeURIComponent(project.slug)}/([^"']+)`, 'g'), (_match, slug) => `${exportPrefix}${slug}/index.html`)
@@ -51,6 +53,10 @@ router.get('/:projectId/export', requireAuth, requireProjectAccess, (req: Reques
   if (existsSync(uploadDir)) archive.directory(uploadDir, 'uploads');
   const previewCssPath = join(process.cwd(), 'public', 'preview.css');
   if (existsSync(previewCssPath)) archive.file(previewCssPath, { name: 'preview.css' });
+  const templateThemesPath = join(process.cwd(), 'public', 'template-themes.css');
+  if (existsSync(templateThemesPath)) archive.file(templateThemesPath, { name: 'template-themes.css' });
+  const templateHeadersPath = join(process.cwd(), 'public', 'template-headers.css');
+  if (existsSync(templateHeadersPath)) archive.file(templateHeadersPath, { name: 'template-headers.css' });
   archive.append(`# ${project.name}\n\nDeze export bevat de gepubliceerde pagina's van het project.`, { name: 'README.md' });
   archive.finalize();
 });
