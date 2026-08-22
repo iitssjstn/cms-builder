@@ -5,6 +5,7 @@ import { createProjectSchema, updateProjectSchema } from '../utils/validation';
 import { requireAuth, requireProjectAccess } from '../middleware/auth';
 import { layouts } from '../utils/layouts';
 import { templateSites } from '../utils/templateSites';
+import { fullTemplates } from '../utils/fullTemplates';
 
 const router = Router();
 
@@ -71,7 +72,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
     restaurant: ['#9f1239', '#ea580c', '#fffaf0', '#3b1f1f', 'Georgia, serif', 'Georgia, serif', '0.25rem'],
     landing: ['#4338ca', '#0891b2', '#f0fdfa', '#172033', 'Arial, sans-serif', 'Arial, sans-serif', '0.75rem']
   };
-  const [primary, secondary, background, text, font, headingFont, radius] = designDefaults[template || 'blank'] || designDefaults.blank;
+  const [primary, secondary, background, text, font, headingFont, radius] = fullTemplates[template || '']?.colors || designDefaults[template || 'blank'] || designDefaults.blank;
   db.prepare(`
     INSERT INTO design_settings (project_id, primary_color, secondary_color, background_color, text_color, font_family, heading_font_family, border_radius)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -236,6 +237,20 @@ router.delete('/:projectId', requireAuth, requireProjectAccess, (req: Request, r
 });
 
 async function createDefaultPages(db: any, projectId: number, template: string) {
+  const fullTemplate = fullTemplates[template];
+  if (fullTemplate) {
+    const insertPage = db.prepare(`INSERT INTO pages (project_id, name, slug, title, status, sort_order) VALUES (?, ?, ?, ?, 'published', ?)`);
+    const insertNav = db.prepare(`INSERT INTO navigation_items (project_id, label, page_id, sort_order) VALUES (?, ?, ?, ?)`);
+    const insertBlock = db.prepare(`INSERT INTO blocks (page_id, type, content, styles, responsive_styles, sort_order, parent_id) VALUES (?, ?, ?, ?, ?, ?, NULL)`);
+    for (const [index, page] of fullTemplate.pages.entries()) {
+      const pageResult = insertPage.run(projectId, page.name, page.slug, page.title, index);
+      const pageId = pageResult.lastInsertRowid as number;
+      insertNav.run(projectId, page.name, pageId, index);
+      page.blocks.forEach((block, blockIndex) => insertBlock.run(pageId, block.type, JSON.stringify(block.content), JSON.stringify(block.styles || {}), JSON.stringify(block.responsive_styles || {}), blockIndex));
+    }
+    return;
+  }
+
   const templates: Record<string, Array<{name: string, slug: string, title: string}>> = {
     blank: [
       { name: 'Home', slug: 'home', title: 'Welkom' }

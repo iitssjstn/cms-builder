@@ -35,6 +35,21 @@ function app() {
     showCreateProject: false,
     newProject: { name: '', slug: '', description: '', template: 'blank' },
     projectError: '',
+    templateLibrary: [
+      { id: 'business', label: 'Bedrijf', description: 'Zakelijke website met diensten, over ons en contact.', category: 'Zakelijk' },
+      { id: 'restaurant', label: 'Restaurant', description: 'Menu, reserveringen en lokale sfeer.', category: 'Horeca' },
+      { id: 'portfolio', label: 'Portfolio', description: 'Werk, projecten en persoonlijke introductie.', category: 'Creatief' },
+      { id: 'photographer', label: 'Fotograaf', description: 'Beeldgerichte portfolio voor studio en maker.', category: 'Creatief' },
+      { id: 'shop', label: 'Webshop', description: 'Producten, bundels en conversiegerichte CTA’s.', category: 'E-commerce' },
+      { id: 'gym', label: 'Sportschool', description: 'Trainingen, lidmaatschappen en motivatie.', category: 'Gezondheid' },
+      { id: 'real-estate', label: 'Makelaar', description: 'Betrouwbare woning- en vastgoedpresentatie.', category: 'Zakelijk' },
+      { id: 'freelancer', label: 'Freelancer', description: 'Persoonlijke dienstenwebsite voor zelfstandigen.', category: 'Persoonlijk' },
+      { id: 'it-company', label: 'IT-bedrijf', description: 'B2B-presentatie voor IT en consultancy.', category: 'Technologie' },
+      { id: 'saas', label: 'SaaS / startup', description: 'Product, pricing en social proof.', category: 'Technologie' },
+      { id: 'blog', label: 'Blog', description: 'Redactionele website voor artikelen en nieuws.', category: 'Content' },
+      { id: 'personal', label: 'Persoonlijk', description: 'Warm verhaal, werk en contact.', category: 'Persoonlijk' },
+      { id: 'local-business', label: 'Lokale onderneming', description: 'Toegankelijke site voor buurt en klanten.', category: 'Lokaal' }
+    ],
 
     // Pages
     pages: [],
@@ -238,6 +253,16 @@ function app() {
       } finally {
         this.loading = false;
       }
+    },
+
+    async useTemplate(template) {
+      this.newProject = { name: `${template.label} website`, slug: '', description: template.description, template: template.id };
+      this.projectError = '';
+      await this.createProject();
+    },
+
+    previewTemplate(template) {
+      window.open(`/preview/template/${encodeURIComponent(template.id)}`, '_blank', 'noopener');
     },
 
     async duplicateProject(id) {

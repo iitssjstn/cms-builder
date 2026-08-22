@@ -1,7 +1,21 @@
 import { Router, Request, Response } from 'express';
 import { getDb } from '../db';
+import { fullTemplates } from '../utils/fullTemplates';
 
 const router = Router();
+
+router.get('/template/:templateId', (req: Request, res: Response) => {
+  const template = fullTemplates[req.params.templateId];
+  if (!template) return res.status(404).send('Template niet gevonden');
+  const page = template.pages[0];
+  const project = { name: template.label, slug: template.id };
+  const [primary, secondary, background, text, font, headingFont, radius] = template.colors;
+  const design = { primary_color: primary, secondary_color: secondary, background_color: background, text_color: text, font_family: font, heading_font_family: headingFont, border_radius: radius };
+  const site = { site_name: template.label, site_description: template.description, footer_text: `Voorbeeldtemplate: ${template.label}` };
+  const navigation = template.pages.map(item => ({ label: item.name, page_slug: item.slug, url: null }));
+  const blocks = page.blocks.map((block, index) => ({ id: index + 1, type: block.type, content: block.content, styles: block.styles || {}, sort_order: index, parent_id: null }));
+  res.type('html').send(renderPageHtml({ ...page, status: 'published' }, project, design, site, blocks, navigation));
+});
 
 type PreviewBlock = {
   id: number;

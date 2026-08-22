@@ -82,6 +82,17 @@
           </template>
         </div>
         <button class="btn btn-primary" @click="showCreateProject = true">Nieuw project aanmaken</button>
+        <section class="template-library">
+          <div class="section-header"><div><h2>Template Library</h2><p class="muted">Kies een complete website. Pagina’s, navigatie, voorbeeldcontent en styling worden automatisch aangemaakt.</p></div></div>
+          <div class="template-grid">
+            <template x-for="template in templateLibrary" :key="template.id">
+              <article class="template-card">
+                <div class="template-preview" :class="'template-' + template.id"><span x-text="template.label"></span><small x-text="template.category"></small></div>
+                <div class="template-card-body"><h3 x-text="template.label"></h3><p x-text="template.description"></p><div class="template-actions"><button class="btn btn-sm" @click="previewTemplate(template)">Preview</button><button class="btn btn-primary btn-sm" @click="useTemplate(template)">Gebruik deze website</button></div></div>
+              </article>
+            </template>
+          </div>
+        </section>
       </section>
 
       <!-- Create project modal -->
@@ -109,6 +120,16 @@
                 <option value="portfolio">Portfolio</option>
                 <option value="restaurant">Restaurant</option>
                 <option value="landing">Landing page</option>
+                <option value="photographer">Fotograaf</option>
+                <option value="shop">Webshop</option>
+                <option value="gym">Sportschool</option>
+                <option value="real-estate">Makelaar</option>
+                <option value="freelancer">Freelancer</option>
+                <option value="it-company">IT-bedrijf</option>
+                <option value="saas">SaaS / startup</option>
+                <option value="blog">Blog</option>
+                <option value="personal">Persoonlijke website</option>
+                <option value="local-business">Lokale onderneming</option>
               </select>
             </div>
             <p class="error" x-show="projectError" x-text="projectError"></p>

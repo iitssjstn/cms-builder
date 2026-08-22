@@ -4,7 +4,7 @@ export const createProjectSchema = z.object({
   name: z.string().min(1).max(100),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/).optional(),
   description: z.string().max(500).optional(),
-  template: z.enum(['blank', 'business', 'portfolio', 'restaurant', 'landing']).optional()
+  template: z.enum(['blank', 'business', 'restaurant', 'portfolio', 'photographer', 'shop', 'gym', 'real-estate', 'freelancer', 'it-company', 'saas', 'blog', 'personal', 'local-business', 'landing']).optional()
 });
 
 export const updateProjectSchema = createProjectSchema.partial();
