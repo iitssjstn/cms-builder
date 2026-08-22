@@ -93,6 +93,7 @@ function app() {
     // Design / site settings
     designForm: {},
     designError: '',
+    designSaved: false,
     siteForm: {},
     siteError: '',
     exportError: '',
@@ -626,12 +627,14 @@ function app() {
 
     async saveDesign() {
       this.designError = '';
+      this.designSaved = false;
       this.loading = true;
       try {
         const { id, project_id, updated_at, ...payload } = this.designForm;
         payload.custom_css = payload.custom_css || '';
         const data = await this.api(`/api/projects/${this.currentProjectId}/design`, { method: 'PATCH', body: JSON.stringify(payload) });
         this.designForm = data.design;
+        this.designSaved = true;
       } catch (e) {
         this.designError = e.message;
       } finally {
