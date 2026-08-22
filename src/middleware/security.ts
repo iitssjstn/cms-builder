@@ -30,6 +30,17 @@ export const securityMiddleware = helmet({
   xPermittedCrossDomainPolicies: { permittedPolicies: 'none' }
 });
 
+export const previewFrameMiddleware = (_req: any, res: any, next: any) => {
+  res.removeHeader('X-Frame-Options');
+
+  const cspHeader = res.getHeader('Content-Security-Policy');
+  if (typeof cspHeader === 'string') {
+    res.setHeader('Content-Security-Policy', cspHeader.replace(/frame-ancestors\s+[^;]+/, "frame-ancestors 'self'"));
+  }
+
+  next();
+};
+
 export const cspNonceMiddleware = (req: any, res: any, next: any) => {
   const nonce = crypto.randomUUID().replace(/-/g, '');
   res.locals.cspNonce = nonce;

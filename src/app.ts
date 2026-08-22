@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import connectSqlite3 from 'connect-sqlite3';
 import { config } from './config';
 import { getDb, getOrCreateSecret } from './db';
-import { securityMiddleware, cspNonceMiddleware } from './middleware/security';
+import { securityMiddleware, previewFrameMiddleware, cspNonceMiddleware } from './middleware/security';
 import { globalRateLimit } from './middleware/rateLimit';
 import { csrfProtection, csrfErrorHandler } from './middleware/csrf';
 import authRoutes from './routes/auth';
@@ -88,7 +88,7 @@ app.use('/api/projects', mediaRoutes);
 app.use('/api/projects', navigationRoutes);
 app.use('/api/projects', settingsRoutes);
 app.use('/api/projects', exportRoutes);
-app.use('/preview', previewRoutes);
+app.use('/preview', previewFrameMiddleware, previewRoutes);
 
 // Static files
 app.use(express.static('public'));
