@@ -308,7 +308,7 @@ function app() {
       if (!this.currentProject?.slug) return;
       const page = this.pages.find(item => item.status === 'published') || this.pages[0];
       const pagePath = page ? `/${encodeURIComponent(page.slug)}` : '';
-      window.open(`/preview/${encodeURIComponent(this.currentProject.slug)}${pagePath}`, '_blank', 'noopener');
+      window.open(`/preview/${encodeURIComponent(this.currentProject.slug)}${pagePath}?previewRefresh=${this.previewRefresh}`, '_blank', 'noopener');
     },
 
     // --- pages ---
@@ -643,6 +643,7 @@ function app() {
         payload.custom_css = payload.custom_css || '';
         const data = await this.api(`/api/projects/${this.currentProjectId}/design`, { method: 'PATCH', body: JSON.stringify(payload) });
         this.designForm = data.design;
+        this.previewRefresh += 1;
         this.designSaved = true;
       } catch (e) {
         this.designError = e.message;
@@ -663,6 +664,7 @@ function app() {
         const { id, project_id, updated_at, social_links, ...payload } = this.siteForm;
         const data = await this.api(`/api/projects/${this.currentProjectId}/settings`, { method: 'PATCH', body: JSON.stringify(payload) });
         this.siteForm = data.settings;
+        this.previewRefresh += 1;
       } catch (e) {
         this.siteError = e.message;
       } finally {
