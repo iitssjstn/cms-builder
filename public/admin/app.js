@@ -60,6 +60,7 @@ function app() {
     // Builder
     builderPage: null,
     blocks: [],
+    previewRefresh: 0,
     blockTypes: ['heading', 'text', 'image', 'button', 'link', 'video', 'container', 'columns', 'hero', 'card', 'gallery', 'contact-form', 'pricing', 'blog', 'faq', 'testimonials', 'cta', 'header', 'footer', 'auth', 'dashboard', 'notfound', 'divider', 'spacer'],
     newBlock: { type: 'text', content: { content: '' } },
     editingBlock: null,
@@ -366,6 +367,14 @@ function app() {
       if (!this.builderPage) return;
       const data = await this.api(`/api/pages/${this.builderPage.id}/blocks`);
       this.blocks = data.blocks;
+      this.previewRefresh += 1;
+    },
+
+    builderPreviewUrl() {
+      if (!this.currentProject?.slug || !this.builderPage?.slug) return 'about:blank';
+      const projectSlug = encodeURIComponent(this.currentProject.slug);
+      const pageSlug = encodeURIComponent(this.builderPage.slug);
+      return `/preview/${projectSlug}/${pageSlug}?editorRefresh=${this.previewRefresh}`;
     },
 
     async createBlock() {

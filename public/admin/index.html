@@ -213,14 +213,15 @@
           <p class="muted" x-show="!builderPage">Kies eerst een pagina bij "Pagina's" en klik op "Builder".</p>
 
           <template x-if="builderPage">
-            <div>
-              <div class="layout-presets">
+            <div class="builder-workspace">
+              <div class="builder-editor">
+                <div class="layout-presets">
                 <div><strong>Snel starten</strong><span class="muted">Kies een voorbeeldindeling als basis.</span></div>
                 <template x-for="layout in layoutPresets" :key="layout.id">
                   <button type="button" class="btn btn-secondary btn-sm" @click="applyLayout(layout.id)" :disabled="loading" :title="layout.description" x-text="layout.label"></button>
                 </template>
-              </div>
-              <form class="inline-form" @submit.prevent="createBlock">
+                </div>
+                <form class="inline-form" @submit.prevent="createBlock">
                 <select x-model="newBlock.type" @change="resetNewBlockContent">
                   <template x-for="t in blockTypes" :key="t">
                     <option :value="t" x-text="blockLabel(t)"></option>
@@ -245,10 +246,10 @@
                   <p class="muted builder-help" x-show="['container','columns','video','gallery','contact-form','pricing','blog','faq','testimonials','cta','header','footer','auth','dashboard','notfound'].includes(newBlock.type)">Dit onderdeel wordt toegevoegd met een professioneel voorbeeld. Je kunt het daarna via Bewerken aanpassen.</p>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm" :disabled="loading">Block toevoegen</button>
-              </form>
-              <p class="error" x-show="blockError" x-text="blockError"></p>
+                </form>
+                <p class="error" x-show="blockError" x-text="blockError"></p>
 
-              <div class="block-list">
+                <div class="block-list">
                 <template x-for="(b, index) in blocks" :key="b.id">
                   <div class="block-item">
                     <div class="block-item-header">
@@ -264,9 +265,9 @@
                   </div>
                 </template>
                 <p class="muted" x-show="blocks.length === 0">Deze pagina heeft nog geen blocks.</p>
-              </div>
+                </div>
 
-              <div class="modal-overlay" x-show="editingBlock" @click.self="editingBlock = null" x-cloak>
+                <div class="modal-overlay" x-show="editingBlock" @click.self="editingBlock = null" x-cloak>
                 <div class="modal builder-modal" x-if="editingBlock">
                   <h2>Onderdeel bewerken</h2>
                   <p class="muted" x-text="blockLabel(editingBlock?.type)"></p>
@@ -291,7 +292,21 @@
                   <p class="error" x-show="blockError" x-text="blockError"></p>
                   <div class="modal-actions"><button class="btn btn-secondary" @click="editingBlock = null">Annuleren</button><button class="btn btn-primary" @click="saveEditedBlock" :disabled="loading">Opslaan</button></div>
                 </div>
+                </div>
               </div>
+
+              <aside class="builder-preview-panel">
+                <div class="builder-preview-header">
+                  <div>
+                    <h3>Live preview</h3>
+                    <span class="muted">Wijzigingen verschijnen na opslaan.</span>
+                  </div>
+                  <a class="btn btn-sm" :href="builderPreviewUrl()" target="_blank" rel="noopener">Openen</a>
+                </div>
+                <div class="builder-preview-frame">
+                  <iframe :src="builderPreviewUrl()" title="Live preview van de pagina"></iframe>
+                </div>
+              </aside>
             </div>
           </template>
         </section>
