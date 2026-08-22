@@ -242,7 +242,7 @@ export const designSettingsSchema = z.object({
   heading_font_family: z.string().max(100).default('system-ui, -apple-system, sans-serif'),
   border_radius: z.string().max(20).default('0.5rem'),
   spacing_unit: z.string().max(20).default('1rem'),
-  custom_css: z.string().max(10000).optional()
+  custom_css: z.preprocess(value => value == null ? '' : value, z.string().max(10000).optional())
 });
 
 export const siteSettingsSchema = z.object({
