@@ -206,6 +206,14 @@ textarea { resize: vertical; font-family: monospace; }
 .builder-workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr); gap: 1.25rem; align-items: start; }
 .builder-editor { min-width: 0; }
 .builder-preview-panel { position: sticky; top: 1rem; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; overflow: hidden; }
+.builder-design-panel { border-bottom: 1px solid var(--border); }
+.builder-design-panel .builder-preview-header { border-bottom: 0; }
+.builder-design-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; padding: 0 1rem 1rem; }
+.builder-design-grid label, .builder-css-label { display: block; font-size: .78rem; font-weight: 600; }
+.builder-design-grid .color-input { margin-top: .35rem; }
+.builder-design-grid input[type="text"] { min-width: 0; }
+.builder-css-label { padding: 0 1rem 1rem; }
+.builder-css-editor { min-height: 8rem; margin-top: .35rem; }
 .builder-preview-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); }
 .builder-preview-header h3 { margin: 0; font-size: 1rem; }
 .builder-preview-header .muted { display: block; font-size: 0.75rem; }

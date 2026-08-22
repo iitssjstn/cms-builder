@@ -296,6 +296,24 @@
               </div>
 
               <aside class="builder-preview-panel">
+                <form class="builder-design-panel" @submit.prevent="saveDesign">
+                  <div class="builder-preview-header">
+                    <div><h3>Stijl aanpassen</h3><span class="muted">Pas aan en klik op opslaan.</span></div>
+                    <button class="btn btn-primary btn-sm" type="submit" :disabled="loading">Opslaan</button>
+                  </div>
+                  <div class="builder-design-grid">
+                    <label>Primaire kleur<div class="color-input"><input type="color" x-model="designForm.primary_color"><input type="text" x-model="designForm.primary_color" maxlength="7" pattern="^#[0-9a-fA-F]{6}$"></div></label>
+                    <label>Secundaire kleur<div class="color-input"><input type="color" x-model="designForm.secondary_color"><input type="text" x-model="designForm.secondary_color" maxlength="7" pattern="^#[0-9a-fA-F]{6}$"></div></label>
+                    <label>Achtergrond<div class="color-input"><input type="color" x-model="designForm.background_color"><input type="text" x-model="designForm.background_color" maxlength="7" pattern="^#[0-9a-fA-F]{6}$"></div></label>
+                    <label>Tekst<div class="color-input"><input type="color" x-model="designForm.text_color"><input type="text" x-model="designForm.text_color" maxlength="7" pattern="^#[0-9a-fA-F]{6}$"></div></label>
+                    <label>Lettertype<select x-model="designForm.font_family"><option value="Arial, sans-serif">Arial</option><option value="Georgia, serif">Georgia</option><option value="Verdana, sans-serif">Verdana</option><option value="'Trebuchet MS', sans-serif">Trebuchet MS</option></select></label>
+                    <label>Koplettertype<select x-model="designForm.heading_font_family"><option value="Arial, sans-serif">Arial</option><option value="Georgia, serif">Georgia</option><option value="Verdana, sans-serif">Verdana</option><option value="'Trebuchet MS', sans-serif">Trebuchet MS</option></select></label>
+                    <label>Hoekafronding<select x-model="designForm.border_radius"><option value="0">Geen</option><option value="0.25rem">Klein</option><option value="0.5rem">Normaal</option><option value="0.75rem">Ruim</option><option value="1rem">Rond</option></select></label>
+                  </div>
+                  <label class="builder-css-label">Eigen CSS<textarea class="css-editor builder-css-editor" x-model="designForm.custom_css" rows="7" maxlength="10000" spellcheck="false" placeholder=".preview-hero {\n  min-height: 70vh;\n}"></textarea></label>
+                  <p class="error" x-show="designError" x-text="designError"></p>
+                  <p class="success" x-show="designSaved">Opgeslagen.</p>
+                </form>
                 <div class="builder-preview-header">
                   <div>
                     <h3>Live preview</h3>
