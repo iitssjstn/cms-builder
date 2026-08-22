@@ -377,6 +377,12 @@ function app() {
       return `/preview/${projectSlug}/${pageSlug}?editorRefresh=${this.previewRefresh}`;
     },
 
+    updateBuilderPreview() {
+      const frame = document.getElementById('builder-preview-frame');
+      if (!frame?.contentWindow) return;
+      frame.contentWindow.postMessage({ type: 'design-preview-update', design: this.designForm }, window.location.origin);
+    },
+
     async createBlock() {
       this.blockError = '';
       this.loading = true;

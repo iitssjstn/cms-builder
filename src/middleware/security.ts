@@ -32,10 +32,16 @@ export const securityMiddleware = helmet({
 
 export const previewFrameMiddleware = (_req: any, res: any, next: any) => {
   res.removeHeader('X-Frame-Options');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
 
   const cspHeader = res.getHeader('Content-Security-Policy');
   if (typeof cspHeader === 'string') {
-    res.setHeader('Content-Security-Policy', cspHeader.replace(/frame-ancestors\s+[^;]+/, "frame-ancestors 'self'"));
+    const newCsp = cspHeader
+      .replace(/frame-src\s+[^;]+/, "frame-src 'self'")
+      .replace(/frame-ancestors\s+[^;]+/, "frame-ancestors 'self'");
+    res.setHeader('Content-Security-Policy', newCsp);
   }
 
   next();
