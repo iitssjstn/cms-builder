@@ -21,7 +21,7 @@ type PreviewBlock = {
   id: number;
   type: string;
   content: Record<string, any>;
-  styles: Record<string, string>;
+  styles: Record<string, any>;
   sort_order: number;
   parent_id: number | null;
 };
@@ -35,7 +35,7 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#39;');
 }
 
-function blockStyle(styles: Record<string, string> = {}): string {
+function blockStyle(styles: Record<string, any> = {}): string {
   const allowed = ['display', 'width', 'maxWidth', 'margin', 'padding', 'gap', 'fontSize', 'fontWeight', 'lineHeight', 'textAlign', 'color', 'fontFamily', 'backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat', 'borderRadius', 'borderWidth', 'borderColor', 'borderStyle', 'boxShadow', 'opacity', 'transform', 'transition'];
   return allowed
     .filter(key => styles[key])
