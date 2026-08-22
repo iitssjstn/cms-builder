@@ -267,8 +267,9 @@
                 <p class="muted" x-show="blocks.length === 0">Deze pagina heeft nog geen blocks.</p>
                 </div>
 
+                <template x-if="editingBlock">
                 <div class="modal-overlay" x-show="editingBlock" @click.self="editingBlock = null" x-cloak>
-                <div class="modal builder-modal" x-if="editingBlock">
+                <div class="modal builder-modal">
                   <h2>Onderdeel bewerken</h2>
                   <p class="muted" x-text="blockLabel(editingBlock?.type)"></p>
                   <div class="builder-fields">
@@ -293,6 +294,7 @@
                   <div class="modal-actions"><button class="btn btn-secondary" @click="editingBlock = null">Annuleren</button><button class="btn btn-primary" @click="saveEditedBlock" :disabled="loading">Opslaan</button></div>
                 </div>
                 </div>
+                </template>
               </div>
 
               <aside class="builder-preview-panel">
