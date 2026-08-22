@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+// Alleen http(s) toestaan zodat een 'javascript:' of 'data:' URL nooit als
+// href/url(...) in de gepubliceerde preview terecht kan komen (click-XSS).
+const httpUrl = () => z.string().url().refine(
+  value => /^https?:\/\//i.test(value),
+  { message: 'URL moet beginnen met http:// of https://' }
+);
+
 export const createProjectSchema = z.object({
   name: z.string().min(1).max(100),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/).optional(),
@@ -29,24 +36,24 @@ export const blockContentSchemas: Record<string, z.ZodSchema> = {
     content: z.string().max(10000)
   }),
   image: z.object({
-    src: z.string().url().or(z.string().startsWith('/uploads/')),
+    src: httpUrl().or(z.string().startsWith('/uploads/')),
     alt: z.string().max(200).optional(),
     caption: z.string().max(500).optional()
   }),
   button: z.object({
     text: z.string().max(50),
-    url: z.string().url().or(z.string().startsWith('/')).or(z.string().startsWith('#')),
+    url: httpUrl().or(z.string().startsWith('/')).or(z.string().startsWith('#')),
     variant: z.enum(['primary', 'secondary', 'outline']).default('primary'),
     size: z.enum(['sm', 'md', 'lg']).default('md')
   }),
   link: z.object({
     text: z.string().max(100),
-    url: z.string().url().or(z.string().startsWith('/')).or(z.string().startsWith('#')),
+    url: httpUrl().or(z.string().startsWith('/')).or(z.string().startsWith('#')),
     target: z.enum(['_self', '_blank']).default('_self')
   }),
   video: z.object({
-    src: z.string().url(),
-    poster: z.string().url().optional(),
+    src: httpUrl(),
+    poster: httpUrl().optional(),
     autoplay: z.boolean().default(false),
     controls: z.boolean().default(true),
     loop: z.boolean().default(false),
@@ -64,21 +71,21 @@ export const blockContentSchemas: Record<string, z.ZodSchema> = {
     headline: z.string().max(200),
     subheadline: z.string().max(500).optional(),
     cta_text: z.string().max(50).optional(),
-    cta_url: z.string().url().or(z.string().startsWith('/')).optional(),
-    background_image: z.string().url().or(z.string().startsWith('/uploads/')).optional(),
+    cta_url: httpUrl().or(z.string().startsWith('/')).optional(),
+    background_image: httpUrl().or(z.string().startsWith('/uploads/')).optional(),
     background_color: z.string().optional(),
     text_align: z.enum(['left', 'center', 'right']).default('center')
   }),
   card: z.object({
-    image: z.string().url().or(z.string().startsWith('/uploads/')).optional(),
+    image: httpUrl().or(z.string().startsWith('/uploads/')).optional(),
     title: z.string().max(100).optional(),
     description: z.string().max(500).optional(),
     cta_text: z.string().max(50).optional(),
-    cta_url: z.string().url().or(z.string().startsWith('/')).optional()
+    cta_url: httpUrl().or(z.string().startsWith('/')).optional()
   }),
   gallery: z.object({
     images: z.array(z.object({
-      src: z.string().url().or(z.string().startsWith('/uploads/')),
+      src: httpUrl().or(z.string().startsWith('/uploads/')),
       alt: z.string().max(200).optional(),
       caption: z.string().max(500).optional()
     })).default([]),
@@ -228,7 +235,7 @@ export const reorderIdsSchema = z.array(z.number().int().positive()).min(1).max(
 export const navigationItemSchema = z.object({
   label: z.string().min(1).max(50),
   page_id: z.number().int().positive().optional(),
-  url: z.string().url().or(z.string().startsWith('/')).or(z.string().startsWith('#')).optional(),
+  url: httpUrl().or(z.string().startsWith('/')).or(z.string().startsWith('#')).optional(),
   parent_id: z.number().int().positive().optional(),
   is_external: z.boolean().default(false)
 });
@@ -248,12 +255,12 @@ export const designSettingsSchema = z.object({
 export const siteSettingsSchema = z.object({
   site_name: z.string().min(1).max(100),
   site_description: z.string().max(500).optional(),
-  logo: z.string().url().or(z.string().startsWith('/uploads/')).optional(),
-  favicon: z.string().url().or(z.string().startsWith('/uploads/')).optional(),
+  logo: httpUrl().or(z.string().startsWith('/uploads/')).optional(),
+  favicon: httpUrl().or(z.string().startsWith('/uploads/')).optional(),
   contact_email: z.string().email().optional(),
   contact_phone: z.string().max(50).optional(),
   contact_address: z.string().max(500).optional(),
-  social_links: z.record(z.string().url()).default({}),
+  social_links: z.record(httpUrl()).default({}),
   footer_text: z.string().max(500).optional(),
   google_analytics: z.string().max(100).optional()
 });
