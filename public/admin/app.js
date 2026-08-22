@@ -248,8 +248,10 @@ function app() {
         this.newProject = { name: '', slug: '', description: '', template: 'blank' };
         await this.loadProjects();
         await this.selectProject(data.project.id);
+        return data.project;
       } catch (e) {
         this.projectError = e.message;
+        return null;
       } finally {
         this.loading = false;
       }
@@ -258,11 +260,19 @@ function app() {
     async useTemplate(template) {
       this.newProject = { name: `${template.label} website`, slug: '', description: template.description, template: template.id };
       this.projectError = '';
-      await this.createProject();
+      const project = await this.createProject();
+      const homePage = this.pages.find(page => page.slug === 'home') || this.pages[0];
+      if (project && homePage) await this.openBuilder(homePage);
     },
 
-    previewTemplate(template) {
-      window.open(`/preview/template/${encodeURIComponent(template.id)}`, '_blank', 'noopener');
+    async previewTemplate(template) {
+      this.newProject = { name: `${template.label} preview`, slug: '', description: template.description, template: template.id };
+      const project = await this.createProject();
+      if (project?.slug) {
+        const page = this.pages.find(item => item.status === 'published') || this.pages[0];
+        const pagePath = page ? `/${encodeURIComponent(page.slug)}` : '';
+        window.open(`/preview/${encodeURIComponent(project.slug)}${pagePath}`, '_blank', 'noopener');
+      }
     },
 
     async duplicateProject(id) {

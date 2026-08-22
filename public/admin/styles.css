@@ -124,6 +124,14 @@ h1, h2, h3 { margin: 0 0 0.5em; }
 
 .content-area { padding: 1.5rem; }
 
+.quick-start { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem; margin: 1rem 0 1.5rem; background: linear-gradient(120deg, #eff6ff, #ecfeff); border: 1px solid #bfdbfe; border-radius: .75rem; }
+.quick-start > div:first-child { display: grid; gap: .25rem; }
+.quick-start-actions { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 700px) {
+  .quick-start { align-items: stretch; flex-direction: column; }
+  .quick-start-actions { justify-content: flex-start; }
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;

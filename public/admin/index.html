@@ -89,7 +89,7 @@
             <template x-for="template in templateLibrary" :key="template.id">
               <article class="template-card">
                 <div class="template-preview" :class="'template-' + template.id"><span x-text="template.label"></span><small x-text="template.category"></small></div>
-                <div class="template-card-body"><h3 x-text="template.label"></h3><p x-text="template.description"></p><div class="template-actions"><button class="btn btn-sm" @click="previewTemplate(template)">Preview</button><button class="btn btn-primary btn-sm" @click="useTemplate(template)">Gebruik deze website</button></div></div>
+                <div class="template-card-body"><h3 x-text="template.label"></h3><p x-text="template.description"></p><div class="template-actions"><button class="btn btn-sm" @click="previewTemplate(template)">Preview project</button><button class="btn btn-primary btn-sm" @click="useTemplate(template)">Start met deze template</button></div></div>
               </article>
             </template>
           </div>
@@ -148,6 +148,10 @@
         <!-- Overview -->
         <section x-show="currentView === 'overview'">
           <h2>Overzicht</h2>
+          <div class="quick-start">
+            <div><strong>Ga direct aan de slag</strong><span class="muted">Kies een actie en bouw je website zonder omwegen.</span></div>
+            <div class="quick-start-actions"><button class="btn btn-primary" @click="openBuilder(pages.find(page => page.slug === 'home') || pages[0])" :disabled="pages.length === 0">Homepage aanpassen</button><button class="btn" @click="openPreview" :disabled="pages.length === 0">Preview bekijken</button><button class="btn" @click="switchView('design')">Ontwerp aanpassen</button></div>
+          </div>
           <div class="stat-grid">
             <div class="stat-card"><span class="stat-value" x-text="pages.length"></span><span class="stat-label">Pagina's</span></div>
             <div class="stat-card"><span class="stat-value" x-text="media.length"></span><span class="stat-label">Media</span></div>
