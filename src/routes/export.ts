@@ -40,6 +40,7 @@ router.get('/:projectId/export', requireAuth, requireProjectAccess, (req: Reques
     }));
     const exportPrefix = page.slug === 'home' ? './' : '../';
     const html = renderPageHtml(page, project, design, site, blocks, navigation)
+      .replace('href="/preview.css"', `href="${exportPrefix}preview.css"`)
       .replaceAll('/uploads/', 'uploads/')
       .replaceAll(`/preview/${encodeURIComponent(project.slug)}/home`, `${exportPrefix}index.html`)
       .replace(new RegExp(`/preview/${encodeURIComponent(project.slug)}/([^"']+)`, 'g'), (_match, slug) => `${exportPrefix}${slug}/index.html`)
@@ -48,6 +49,8 @@ router.get('/:projectId/export', requireAuth, requireProjectAccess, (req: Reques
   }
 
   if (existsSync(uploadDir)) archive.directory(uploadDir, 'uploads');
+  const previewCssPath = join(process.cwd(), 'public', 'preview.css');
+  if (existsSync(previewCssPath)) archive.file(previewCssPath, { name: 'preview.css' });
   archive.append(`# ${project.name}\n\nDeze export bevat de gepubliceerde pagina's van het project.`, { name: 'README.md' });
   archive.finalize();
 });

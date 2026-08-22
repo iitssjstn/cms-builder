@@ -55,6 +55,7 @@
           </template>
         </select>
         <button class="btn btn-primary" @click="showCreateProject = true">Nieuw project</button>
+        <button class="btn btn-danger" x-show="currentProject" @click="deleteProject(currentProject)">Website verwijderen</button>
       </div>
     </header>
 
